@@ -1,18 +1,26 @@
+/**
+ * @author Sean Logan
+ * @author Shilnara Dam
+ * @version 1.0
+ * Endpoint is used for user registration
+ */
+
 //express is the framework we're going to use to handle requests
-const { response } = require('express')
-const { request } = require('express')
 const express = require('express')
+
+// For email verification
+require('dotenv').config()
+
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
 
 //Access the connection to Heroku Database
 const pool = require('../utilities').pool
-
 const validation = require('../utilities').validation
 let isStringProvided = validation.isStringProvided
 
 const generateHash = require('../utilities').generateHash
 const generateSalt = require('../utilities').generateSalt
-
-const sendEmail = require('../utilities').sendEmail
 
 const router = express.Router()
 
@@ -56,6 +64,10 @@ router.post('/', (request, response, next) => {
     const username = isStringProvided(request.body.username) ?  request.body.username : request.body.email
     const email = request.body.email
     const password = request.body.password
+    
+
+    
+
     //Verify that the caller supplied all the parameters
     //In js, empty strings or null values evaluate to false
     if(isStringProvided(first) 
@@ -72,6 +84,7 @@ router.post('/', (request, response, next) => {
             .then(result => {
                 //stash the memberid into the request object to be used in the next function
                 request.memberid = result.rows[0].memberid
+                
                 next()
             })
             .catch((error) => {
@@ -104,22 +117,53 @@ router.post('/', (request, response, next) => {
         //watch this youtube video: https://www.youtube.com/watch?v=8ZtInClXe1Q
         let salt = generateSalt(32)
         let salted_hash = generateHash(request.body.password, salt)
-
         let theQuery = "INSERT INTO CREDENTIALS(MemberId, SaltedHash, Salt) VALUES ($1, $2, $3)"
         let values = [request.memberid, salted_hash, salt]
         pool.query(theQuery, values)
             .then(result => {
+                // Creating email to send to user for verification
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.EMAIL,
+                        pass: process.env.PASSWORD
+                    }
+                });
+                  
+                const token = jwt.sign({
+                        data: 'Token Data'  
+                    }, process.env.JSON_WEB_TOKEN, { expiresIn: '10m' }  
+                );    
+                const mailConfigurations = {
+      
+                    // It should be a string of sender/server email
+                    from: process.env.EMAIL,
+                  
+                    to: request.body.email,
+                  
+                    // Subject of Email
+                    subject: 'Email Verification',
+                      
+                    // This would be the text of email body
+                    text: `Hi! To register please follow the link http://localhost:5000/verify/${token}`
+                      
+                };
+                transporter.sendMail(mailConfigurations, function(error, info){
+                    if (error) throw Error(error);
+                    console.log('Email Sent Successfully');
+                    console.log(info);
+                });
                 //We successfully added the user!
                 response.status(201).send({
                     success: true,
                     email: request.body.email
                 })
-                sendEmail("our.email@lab.com", request.body.email, "Welcome to our App!", "Please verify your Email account.")
+                return
             })
             .catch((error) => {
                 //log the error for debugging
                 // console.log("PWD insert")
-                // console.log(error)
+                console.log(error)
 
                 /***********************************************************************
                  * If we get an error inserting the PWD, we should go back and remove
@@ -133,20 +177,7 @@ router.post('/', (request, response, next) => {
                     detail: error.detail
                 })
             })
-})
-
-router.get('/hash_demo', (request, response) => {
-    let password = 'hello12345'
-
-    let salt = generateSalt(32)
-    let salted_hash = generateHash(password, salt)
-    let unsalted_hash = generateHash(password)
-
-    response.status(200).send({
-        'salt': salt,
-        'salted_hash': salted_hash,
-        'unsalted_hash': unsalted_hash
-    })
+        
 })
 
 
