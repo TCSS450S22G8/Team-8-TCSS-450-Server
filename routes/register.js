@@ -151,7 +151,7 @@ router.post('/', (request, response, next) => {
                     subject: 'Email Verification',
                       
                     // This would be the text of email body
-                    text: `Hi! To register please follow the link http://localhost:5000/verify/${token}`
+                    text: `Hi! To register please follow the link https://tcss-450-sp22-group-8.herokuapp.com/verify/${token}`
                       
                 };
                 transporter.sendMail(mailConfigurations, function(error, info){
