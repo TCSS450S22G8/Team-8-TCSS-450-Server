@@ -131,7 +131,7 @@ router.post('/', (request, response, next) => {
                 });
                   
                 const token = jwt.sign({
-                        data: 'Token Data'  
+                        memberid: request.memberid,
                     }, process.env.JSON_WEB_TOKEN, { expiresIn: '10m' }  
                 );    
                 const mailConfigurations = {
@@ -149,15 +149,19 @@ router.post('/', (request, response, next) => {
                       
                 };
                 transporter.sendMail(mailConfigurations, function(error, info){
-                    if (error) throw Error(error);
-                    console.log('Email Sent Successfully');
-                    console.log(info);
+                    if (error) {
+                        response.status(401).send({
+                        message: "Error sending email, possible incorrect email"});
+                    } else {
+                        //We successfully added the user!
+                        response.status(201).send({
+                            success: true,
+                            email: request.body.email
+                        })
+                        console.log('Email Sent Successfully');
+                        console.log(info);
+                    }
                 });
-                //We successfully added the user!
-                response.status(201).send({
-                    success: true,
-                    email: request.body.email
-                })
                 return
             })
             .catch((error) => {

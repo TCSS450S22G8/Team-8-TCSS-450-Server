@@ -1,7 +1,15 @@
-
+const { request } = require('express');
+const { response } = require('express');
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { noExceptions } = require('npm/lib/utils/parse-json');
 const router = express.Router()
+
+//Access the connection to Heroku Database
+const pool = require('../utilities').pool
+
+require('dotenv').config()
+
 
   
 router.get('/:token', (req, res)=>{
@@ -14,9 +22,22 @@ router.get('/:token', (req, res)=>{
             res.send("Email verification failed, possibly the link is invalid or expired");
         }
         else {
-            
 
-            res.send("Email verifified successfully");
+            // decode the token created with const {token} = req.params; above
+            const decoded = jwt.decode(token);            
+            console.log(decoded);
+            console.log(decoded.memberid)
+            let query =  "UPDATE MEMBERS SET verification = 1 WHERE memberid = $1"
+            const values = [decoded.memberid]
+            pool.query(query, values)
+                .catch((error) => {
+                        response.status(400).send({
+                            message: 'verification failed to update',
+                            detail: error.detail
+                        })
+                        //console.log(error)
+                })
+                res.send("Email verifified successfully");
         }
     });
 });
