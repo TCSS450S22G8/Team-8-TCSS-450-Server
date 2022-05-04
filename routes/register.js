@@ -152,6 +152,7 @@ router.post('/', (request, response, next) => {
                     if (error) {
                         response.status(401).send({
                         message: "Error sending email, possible incorrect email"});
+                        console.log(error)
                     } else {
                         //We successfully added the user!
                         response.status(201).send({
