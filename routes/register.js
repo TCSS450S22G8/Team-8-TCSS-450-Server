@@ -123,6 +123,9 @@ router.post('/', (request, response, next) => {
             .then(result => {
                 // Creating email to send to user for verification
                 const transporter = nodemailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    protocol: 'tls', 
                     service: 'gmail',
                     auth: {
                         user: process.env.EMAIL,
