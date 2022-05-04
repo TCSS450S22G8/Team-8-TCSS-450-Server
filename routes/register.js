@@ -130,7 +130,9 @@ router.post('/', (request, response, next) => {
                     auth: {
                         user: process.env.EMAIL,
                         pass: process.env.PASSWORD
-                    }
+                    },
+                    debug: false,
+                    logger: true
                 });
                   
                 const token = jwt.sign({
