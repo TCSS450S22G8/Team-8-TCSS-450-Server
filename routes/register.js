@@ -129,7 +129,7 @@ router.post('/', (request, response, next) => {
                     service: 'gmail',
                     auth: {
                         user: process.env.EMAIL,
-                        pass: process.env.PASSWORD
+                        password: process.env.PASSWORD
                     },
                     debug: false,
                     logger: true
