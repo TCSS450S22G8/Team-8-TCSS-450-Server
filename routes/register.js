@@ -127,9 +127,10 @@ router.post('/', (request, response, next) => {
                     port: 587,
                     protocol: 'tls', 
                     service: 'gmail',
+                    secure: false,
                     auth: {
                         user: process.env.EMAIL,
-                        password: process.env.PASSWORD
+                        pass: process.env.PASSWORD
                     },
                     debug: false,
                     logger: true
