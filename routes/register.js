@@ -13,6 +13,7 @@ require('dotenv').config()
 
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
+const { isValidEmail, isValidPassword, isValidNickname } = require('../utilities/validationUtils');
 
 //Access the connection to Heroku Database
 const pool = require('../utilities').pool
@@ -70,11 +71,11 @@ router.post('/', (request, response, next) => {
 
     //Verify that the caller supplied all the parameters
     //In js, empty strings or null values evaluate to false
-    if(isStringProvided(first) 
-        && isStringProvided(last) 
-        && isStringProvided(username) 
-        && isStringProvided(email) 
-        && isStringProvided(password)) {
+    if(isValidNickname(first) 
+        && isValidNickname(last) 
+        && isValidNickname(username) 
+        && isValidEmail(email) 
+        && isValidPassword(password)) {
         
         //We're using placeholders ($1, $2, $3) in the SQL query string to avoid SQL Injection
         //If you want to read more: https://stackoverflow.com/a/8265319

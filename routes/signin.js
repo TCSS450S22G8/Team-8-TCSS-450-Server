@@ -14,6 +14,7 @@ const router = express.Router()
 //Pull in the JWT module along with out a secret key
 const jwt = require('jsonwebtoken')
 const { CLIENT_MULTI_RESULTS } = require('mysql/lib/protocol/constants/client')
+const { isValidEmail, isValidPassword } = require('../utilities/validationUtils')
 const config = {
     secret: process.env.JSON_WEB_TOKEN
 }
@@ -60,7 +61,7 @@ router.get('/', (request, response, next) => {
 
     const [email, password] = credentials.split(':')
 
-    if (isStringProvided(email) && isStringProvided(password)) {
+    if (isValidEmail(email) && isValidPassword(password)) {
         request.auth = { 
             "email" : email,
             "password" : password
