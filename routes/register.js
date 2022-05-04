@@ -155,8 +155,9 @@ router.post('/', (request, response, next) => {
                 };
                 transporter.sendMail(mailConfigurations, function(error, info){
                     if (error) {
+                        console.log(error)
                         response.status(401).send({
-                        message: "Error sending email, possible incorrect email"});
+                        message: "Error sending email, possible incorrect email" + error});
                         console.log(error)
                     } else {
                         //We successfully added the user!
