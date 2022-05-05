@@ -35,7 +35,7 @@ const router = express.Router()
  * 
  * @apiParam {String} first a users first name
  * @apiParam {String} last a users last name
- * @apiParam {String} [username] a username *unique
+ * @apiParam {String} username a username *unique
  * @apiParam {String} email a users email *unique
  * @apiParam {String} password a users password
  * 
@@ -58,7 +58,7 @@ const router = express.Router()
  * @apiError (400: Email exists) {String} message "Email exists"
  *  
  * @apiError (400: Other Error) {String} message "other error, see detail"
- * @apiError (400: Other Error) {String} detail Information about th error
+ * @apiError (400: Other Error) {String} detail Information about the error
  * 
  */ 
 router.post('/', (request, response, next) => {
