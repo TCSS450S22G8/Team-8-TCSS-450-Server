@@ -1,3 +1,11 @@
+/**
+ * @author Sean Logan
+ * @author Shilnara Dam
+ * @version 1.0
+ * Endpoint is used for logging into the application.
+ */
+
+
 //express is the framework we're going to use to handle requests
 const express = require('express')
 
@@ -69,7 +77,7 @@ router.get('/', (request, response, next) => {
         next()
     } else {
         response.status(400).send({
-            message: "Malformed Authorization Header"
+            message: "Invalid Credentials"
         })
     }
 }, (request, response) => {

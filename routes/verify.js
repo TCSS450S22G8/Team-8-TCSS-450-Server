@@ -1,3 +1,14 @@
+/**
+ * @author Sean Logan
+ * @author Shilnara Dam
+ * @version 1.0
+ * Enpoint is used for verification.
+ * Sends user an email to the email provided during
+ * the registration process for confirmation that they
+ * are the owner of the email account.
+ */
+
+
 const { request } = require('express');
 const { response } = require('express');
 const express = require('express');

@@ -2,7 +2,8 @@
  * @author Sean Logan
  * @author Shilnara Dam
  * @version 1.0
- * Endpoint is used for user registration
+ * @
+ * Endpoint is used for user registering with the application.
  */
 
 //express is the framework we're going to use to handle requests
