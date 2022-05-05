@@ -1,5 +1,6 @@
 /**
- * class of functions for validating first names, last names, nicknames, emails, and passwords
+ * Class of functions for validating first names, last names, nicknames, emails, and passwords
+ * 
  * @author Shilnara Dam
  * @author Sean Logan
  * @author Levi McCoy

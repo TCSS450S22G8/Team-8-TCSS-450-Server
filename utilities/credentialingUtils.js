@@ -1,3 +1,7 @@
+/**
+ * @author Charles Bryan
+ */
+
 //We use this create the SHA256 hash
 const crypto = require("crypto");
 
