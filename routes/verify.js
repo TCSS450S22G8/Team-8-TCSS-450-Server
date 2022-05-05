@@ -22,7 +22,6 @@ const pool = require('../utilities').pool
 require('dotenv').config()
 
 
-  
 router.get('/:token', (req, res)=>{
     const {token} = req.params;
   

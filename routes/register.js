@@ -1,9 +1,11 @@
 /**
+ * Endpoint is used for user registering with the application.
+ * Adapted from original code by Charles Bryan.
+ *
+ * @author Charles Bryan
  * @author Sean Logan
  * @author Shilnara Dam
  * @version 1.0
- * @
- * Endpoint is used for user registering with the application.
  */
 
 //express is the framework we're going to use to handle requests
@@ -33,15 +35,16 @@ const router = express.Router()
  * 
  * @apiParam {String} first a users first name
  * @apiParam {String} last a users last name
+ * @apiParam {String} [username] a username *unique
  * @apiParam {String} email a users email *unique
  * @apiParam {String} password a users password
- * @apiParam {String} [username] a username *unique, if none provided, email will be used
  * 
  * @apiParamExample {json} Request-Body-Example:
  *  {
- *      "first":"Charles",
- *      "last":"Bryan",
- *      "email":"cfb3@fake.email",
+ *      "first":"testFirst",
+ *      "last":"testLast",
+ *      "username":"testUser",
+ *      "email":"testEmail@fake.email",
  *      "password":"test12345"
  *  }
  * 

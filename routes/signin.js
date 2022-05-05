@@ -1,8 +1,11 @@
 /**
+ * Endpoint is used for logging into the application.
+ * Adapted from original code by Charles Bryan.
+ *
+ * @author Charles Bryan
  * @author Sean Logan
  * @author Shilnara Dam
  * @version 1.0
- * Endpoint is used for logging into the application.
  */
 
 
@@ -48,12 +51,14 @@ const config = {
  * 
  * @apiError (400: Missing Authorization Header) {String} message "Missing Authorization Header"
  * 
- * @apiError (400: Malformed Authorization Header) {String} message "Malformed Authorization Header"
+ * @apiError (400: Invalid Credentials) {String} message "Invalid Credentials"
  * 
  * @apiError (404: User Not Found) {String} message "User not found"
- * 
- * @apiError (400: Invalid Credentials) {String} message "Credentials did not match"
- * 
+ *
+ * @apiError (401: Non-verified Account) {String} message "Account needs to be verified before you can login"
+ *  
+ * @apiError (400: Invalid Email or Password) {String} message "Invalid Email or Password"
+ *
  */ 
 router.get('/', (request, response, next) => {
     if (isStringProvided(request.headers.authorization) && request.headers.authorization.startsWith('Basic ')) {
@@ -132,7 +137,7 @@ router.get('/', (request, response, next) => {
             } else {
                 //credentials dod not match
                 response.status(400).send({
-                    message: 'Credentials did not match' 
+                    message: 'Invalid Email or Password' 
                 })
             }
         })
