@@ -89,7 +89,7 @@ router.get('/', (request, response, next) => {
     const theQuery = `SELECT saltedhash, salt, Members.memberid, Members.verification FROM Credentials
                       INNER JOIN Members ON
                       Credentials.memberid=Members.memberid 
-                      WHERE Members.email=$1`
+                      WHERE Members.email=$1` // Adjust for uppercase?
     const values = [request.auth.email]
     pool.query(theQuery, values)
         .then(result => { 

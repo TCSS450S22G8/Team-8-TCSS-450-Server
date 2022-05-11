@@ -25,6 +25,7 @@ app.use('/auth', require('./routes/register.js'))
 
 app.use('/verify', require('./routes/verify.js'))
 
+app.use("/change-password", require('./routes/changePassword.js'))
 
 /*
  * Return HTML for the / end point. 
