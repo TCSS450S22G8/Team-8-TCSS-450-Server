@@ -1,12 +1,8 @@
 {
-    "name": "TCSS 450 Group 8 Web Services",
-    "version": "1.0.1",
-    "description": "The TCSS 450 Group 8 Web Service API Documentation",
-    "title": "TCSS 450 Group 8 API Doc",
-    "url" : "https://tcss-450-sp22-group-8.herokuapp.com/doc",
-    "order": [
-      "register",
-      "signin",
-      "change password"
-    ]
-  }
+  "name": "TCSS 450 Group 8 Web Services",
+  "version": "1.0.1",
+  "description": "The TCSS 450 Group 8 Web Service API Documentation",
+  "title": "TCSS 450 Group 8 API Doc",
+  "url": "https://tcss-450-sp22-group-8.herokuapp.com/doc",
+  "order": ["register", "signin", "change password"]
+}
