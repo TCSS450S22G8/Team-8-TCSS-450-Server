@@ -31,16 +31,11 @@ console.log(result.city); // string
 */
 
 /**
- * @api {get} /zipcode Request for current, hourly, and daily weather information in imperial units. (Zipcode)
+ * @api {get} /zipcode/:zipcode Request for current, hourly, and daily weather information in imperial units. (Zipcode)
  * @apiName GetWeatherZipcode
  * @apiGroup Get Weather
  * 
  * @apiparam {Number} zipcode Zipcode of desired location.
- * 
- * @apiParamExample {json} Request-Body-Example:
- *  {
- *      "zipcode":"98404",
- *  }
  * 
  * @apiSuccess (Success 200) {json} Success json object of weather information
  *
@@ -149,9 +144,9 @@ console.log(result.city); // string
  * @apiError (400: Invalid Zipcode) {String} message "Invalid Zipcode"
  *
  */
-router.get("/zipcode", (req, res) => {
+router.get("/zipcode/:zipcode", (req, res) => {
     //getting user input zipcode
-    const zipcode = req.body.zipcode;
+    const {zipcode} = req.params;
     let zipCodeUrl = `http://api.openweathermap.org/geo/1.0/zip?zip=${zipcode}&appid=${API_KEY}`
     //make a request to get the latitude and longitude, city, and country of desired zipcode
     request(zipCodeUrl, function (error, response, body) {
@@ -193,18 +188,13 @@ router.get("/zipcode", (req, res) => {
 });
 
 /**
- * @api {get} /lat-lon Request for current, hourly, and daily weather information in imperial units. (Lat/Lon)
+ * @api {get} /lat-lon/:lat/:lon Request for current, hourly, and daily weather information in imperial units. (Lat/Lon)
  * @apiName GetWeatherLatLon
  * @apiGroup Get Weather
  *
  * @apiParam {Number} lat Latitude of desired location.
  * @apiParam {Number} lon Longitude of desired location.
  *
- * @apiParamExample {json} Request-Example:
- *           {
- *              "lat": 33.44,
- *              "lon": 33.44
- *           }
  *
  * @apiSuccess (Success 200) {json} Success json object of weather information
  *
@@ -313,9 +303,10 @@ router.get("/zipcode", (req, res) => {
  * @apiError (400: Invalid Latitude and/or Longitude) {String} message "Invalid Latitude and/or Longitude"
  *
  */
-router.get("/lat-lon", (req, res) => {
-    const lat = req.body.lat;
-    const lon = req.body.lon;
+router.get("/lat-lon/:lat/:lon", (req, res) => {
+    //getting user input lat and long
+    const {lat} = req.params;
+    const {lon} = req.params;
     let cityUrl = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
     //sends request to get the city and country of the latitude and longitude
     request(cityUrl, function (error, response, body) {
