@@ -19,9 +19,19 @@ const API_KEY = process.env.OPEN_WEATHER_API_KEY;
 
 var router = express.Router()
 
+/* 
+NOTES ON HOW TO PARSE JSON RESPONSE
+
+console.log(result.lat); // double
+console.log(result.lon); // double
+console.log(result.current); // json format. weather contains an array with json format
+console.log(result.hourly[0].weather[0]); //an array of json format. weather contains another array with json format. 48 hours.
+console.log(result.daily[0].temp.day); //an array of json format with more json format. 8 days so including today
+console.log(result.city); // string
+*/
 
 /**
- * @api {get} /zipcode Request for current, hourly, and daily weather information. (Zipcode)
+ * @api {get} /zipcode Request for current, hourly, and daily weather information in imperial units. (Zipcode)
  * @apiName GetWeatherZipcode
  * @apiGroup Get Weather
  * 
@@ -163,7 +173,7 @@ router.get("/zipcode", (req, res) => {
             let lat = result.lat;
             let lon = result.lon;
             let city = result.name + ", " + result.country;
-            let weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?exclude=minutely,alerts&lat=${lat}&lon=${lon}&appid=${API_KEY}`;
+            let weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?exclude=minutely,alerts&units=imperial&lat=${lat}&lon=${lon}&appid=${API_KEY}`;
             // if it is a valid zipcode, get the current, hourly, and daily weather
             request(weatherUrl, function(error, response, body) {
                 if (error) {
@@ -183,7 +193,7 @@ router.get("/zipcode", (req, res) => {
 });
 
 /**
- * @api {get} /lat-lon Request for current, hourly, and daily weather information. (Lat/Lon)
+ * @api {get} /lat-lon Request for current, hourly, and daily weather information in imperial units. (Lat/Lon)
  * @apiName GetWeatherLatLon
  * @apiGroup Get Weather
  *
@@ -317,7 +327,7 @@ router.get("/lat-lon", (req, res) => {
             var result = JSON.parse(body);
             if (result.length >= 1) {
                 let city = result[0].name + ", " + result[0].country;
-                let weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?exclude=minutely,alerts&lat=${lat}&lon=${lon}&appid=${API_KEY}`;
+                let weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?exclude=minutely,alerts&units=imperial&lat=${lat}&lon=${lon}&appid=${API_KEY}`;
                 //If it is a valid lat and lon, get the current, hourly, and daily weather
                 request(weatherUrl, function(error, response, body) {
                     if (error) {
