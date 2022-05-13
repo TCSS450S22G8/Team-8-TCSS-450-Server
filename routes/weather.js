@@ -157,16 +157,16 @@ router.get("/zipcode", (req, res) => {
     request(zipCodeUrl, function (error, response, body) {
         if (error) {
             res.status(400).send({
-                message: "Invalid Zipcode"
+                message: "Invalid Zipcode" + zipcode
             })
             return;
         } else {
             //parsing json response to get lat, lon, and city, and country.
             var result = JSON.parse(body);
-            //check if user has inputted a valid zipcode
+            //check if user has inputted a valid zipcode. .cod since thats what the api has it called.
             if (result.cod == 404) {
                 res.status(400).send({
-                    message: "Invalid Zipcode"
+                    message: "Invalid Zipcode" + zipcode
                 })
                 return; 
             }
@@ -178,7 +178,7 @@ router.get("/zipcode", (req, res) => {
             request(weatherUrl, function(error, response, body) {
                 if (error) {
                     res.status(400).send({
-                        message: "Invalid Zipcode"
+                        message: "Invalid Zipcode" + zipcode
                     })
                     return;
                 } else {
