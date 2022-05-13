@@ -152,6 +152,9 @@ console.log(result.city); // string
 router.get("/zipcode", (req, res) => {
     //getting user input zipcode
     const zipcode = req.body.zipcode;
+    res.status(400).send({
+        message: req.body
+    })
     let zipCodeUrl = `http://api.openweathermap.org/geo/1.0/zip?zip=${zipcode}&appid=${API_KEY}`
     //make a request to get the latitude and longitude, city, and country of desired zipcode
     request(zipCodeUrl, function (error, response, body) {
