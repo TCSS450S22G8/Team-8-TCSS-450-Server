@@ -29,6 +29,8 @@ app.use("/change-password", require("./routes/changePassword.js"));
 
 app.use("/weather", require("./routes/weather.js"));
 
+app.use("/contacts", require("./routes/contacts.js"));
+
 /*
  * Return HTML for the / end point.
  * This is a nice location to document your web service API
@@ -36,13 +38,15 @@ app.use("/weather", require("./routes/weather.js"));
  * Look up the node module 'fs' ex: require('fs');
  */
 app.get("/", (request, response) => {
-  //this is a Web page so set the content-type to HTML
-  response.writeHead(200, { "Content-Type": "text/html" });
-  for (i = 1; i < 7; i++) {
-    //write a response to the client
-    response.write("<h" + i + ' style="color:blue">Hello World!</h' + i + ">");
-  }
-  response.end(); //end the response
+    //this is a Web page so set the content-type to HTML
+    response.writeHead(200, { "Content-Type": "text/html" });
+    for (i = 1; i < 7; i++) {
+        //write a response to the client
+        response.write(
+            "<h" + i + ' style="color:blue">Hello World!</h' + i + ">"
+        );
+    }
+    response.end(); //end the response
 });
 
 /*
@@ -62,5 +66,5 @@ app.use("/doc", express.static("apidoc"));
  * if(port == null) {port = 5000}
  */
 app.listen(process.env.PORT || 5000, () => {
-  console.log("Server up and running on port: " + (process.env.PORT || 5000));
+    console.log("Server up and running on port: " + (process.env.PORT || 5000));
 });

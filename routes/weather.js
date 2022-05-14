@@ -1,23 +1,21 @@
 /**
  * Enpoint for getting current, hourly, and daily weather based on zipcode or lat/long.
- * 
+ *
  * @author Shilnara Dam
  * @version 5/13/22
  */
 
-
 //express is the framework we're going to use to handle requests
-const express = require('express')
+const express = require("express");
 
 //request module is needed to make a request to a web service
-const request = require('request')
+const request = require("request");
 
 //required to get API key
-require('dotenv').config()
+require("dotenv").config();
 const API_KEY = process.env.OPEN_WEATHER_API_KEY;
 
-
-var router = express.Router()
+var router = express.Router();
 
 /* 
 NOTES ON HOW TO PARSE JSON RESPONSE
@@ -31,15 +29,15 @@ console.log(result.city); // string
 */
 
 /**
- * @api {get} /zipcode/:zipcode Request for current, hourly, and daily weather information in imperial units. (Zipcode)
+ * @api {get} /weather/zipcode/:zipcode Request for current, hourly, and daily weather information in imperial units. (Zipcode)
  * @apiName GetWeatherZipcode
  * @apiGroup Get Weather
- * 
+ *
  * @apiparam {Number} zipcode Zipcode of desired location.
- * 
+ *
  * @apiSuccess (Success 200) {json} Success json object of weather information
  *
- * @apiSuccessExample {json} Success-Response: 
+ * @apiSuccessExample {json} Success-Response:
  *      {
  *        "lat": 33.44,
  *        "lon": -94.04,
@@ -140,20 +138,20 @@ console.log(result.city); // string
  *        ],
  *        "city": "Tacoma, US"
  *      }
- * 
+ *
  * @apiError (400: Invalid Zipcode) {String} message "Invalid Zipcode"
  *
  */
 router.get("/zipcode/:zipcode", (req, res) => {
     //getting user input zipcode
-    const {zipcode} = req.params;
-    let zipCodeUrl = `http://api.openweathermap.org/geo/1.0/zip?zip=${zipcode}&appid=${API_KEY}`
+    const { zipcode } = req.params;
+    let zipCodeUrl = `http://api.openweathermap.org/geo/1.0/zip?zip=${zipcode}&appid=${API_KEY}`;
     //make a request to get the latitude and longitude, city, and country of desired zipcode
     request(zipCodeUrl, function (error, response, body) {
         if (error) {
             res.status(400).send({
-                message: "Invalid Zipcode 1 " + zipcode
-            })
+                message: "Invalid Zipcode 1 " + zipcode,
+            });
             return;
         } else {
             //parsing json response to get lat, lon, and city, and country.
@@ -161,20 +159,20 @@ router.get("/zipcode/:zipcode", (req, res) => {
             //check if user has inputted a valid zipcode. .cod since thats what the api has it called.
             if (result.cod == 404) {
                 res.status(400).send({
-                    message: "Invalid Zipcode 2 " + zipcode
-                })
-                return; 
+                    message: "Invalid Zipcode 2 " + zipcode,
+                });
+                return;
             }
             let lat = result.lat;
             let lon = result.lon;
             let city = result.name + ", " + result.country;
             let weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?exclude=minutely,alerts&units=imperial&lat=${lat}&lon=${lon}&appid=${API_KEY}`;
             // if it is a valid zipcode, get the current, hourly, and daily weather
-            request(weatherUrl, function(error, response, body) {
+            request(weatherUrl, function (error, response, body) {
                 if (error) {
                     res.status(400).send({
-                        message: "Invalid Zipcode 3 " + zipcode
-                    })
+                        message: "Invalid Zipcode 3 " + zipcode,
+                    });
                     return;
                 } else {
                     // sending weather information along with city and country
@@ -182,13 +180,13 @@ router.get("/zipcode/:zipcode", (req, res) => {
                     result["city"] = city;
                     res.status(200).send(result);
                 }
-            })
+            });
         }
-    })
+    });
 });
 
 /**
- * @api {get} /lat-lon/:lat/:lon Request for current, hourly, and daily weather information in imperial units. (Lat/Lon)
+ * @api {get} /weather/lat-lon/:lat/:lon Request for current, hourly, and daily weather information in imperial units. (Lat/Lon)
  * @apiName GetWeatherLatLon
  * @apiGroup Get Weather
  *
@@ -198,7 +196,7 @@ router.get("/zipcode/:zipcode", (req, res) => {
  *
  * @apiSuccess (Success 200) {json} Success json object of weather information
  *
- * @apiSuccessExample {json} Success-Response: 
+ * @apiSuccessExample {json} Success-Response:
  *      {
  *        "lat": 33.44,
  *        "lon": -94.04,
@@ -305,40 +303,40 @@ router.get("/zipcode/:zipcode", (req, res) => {
  */
 router.get("/lat-lon/:lat/:lon", (req, res) => {
     //getting user input lat and long
-    const {lat} = req.params;
-    const {lon} = req.params;
-    let cityUrl = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
+    const { lat } = req.params;
+    const { lon } = req.params;
+    let cityUrl = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
     //sends request to get the city and country of the latitude and longitude
     request(cityUrl, function (error, response, body) {
         if (error) {
             res.status(400).send({
-                message: "Invalid latitude or longitude"
-            })
+                message: "Invalid latitude or longitude",
+            });
         } else {
             var result = JSON.parse(body);
             if (result.length >= 1) {
                 let city = result[0].name + ", " + result[0].country;
                 let weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?exclude=minutely,alerts&units=imperial&lat=${lat}&lon=${lon}&appid=${API_KEY}`;
                 //If it is a valid lat and lon, get the current, hourly, and daily weather
-                request(weatherUrl, function(error, response, body) {
+                request(weatherUrl, function (error, response, body) {
                     if (error) {
                         res.status(400).send({
-                            message: "Invalid latitude or longitude"
-                        })
+                            message: "Invalid latitude or longitude",
+                        });
                     } else {
                         // sending weather information along with city and country
                         var result = JSON.parse(body);
                         result["city"] = city;
                         res.status(200).send(result);
                     }
-                })
+                });
             } else {
                 res.status(400).send({
-                    message: "Invalid latitude or longitude"
-                })
+                    message: "Invalid latitude or longitude",
+                });
             }
         }
     });
 });
 
-module.exports = router
+module.exports = router;

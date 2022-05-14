@@ -1,11 +1,11 @@
 {
   "name": "450-lab",
   "version": "1.0.0",
-  "description": "TCSS 450 Lab for creating a webservice",
+  "description": "TCSS 450 Group 8 'SlapChat' Webservice",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cfb3/tcss-450-web-service-starter"
+    "url": "https://tcss-450-sp22-group-8.herokuapp.com/"
   },
   "scripts": {
     "test": "index.js"
@@ -15,7 +15,7 @@
     "Mobile",
     "Apps"
   ],
-  "author": "TCSS 450",
+  "author": "TCSS 450 Group 8 'SlapChat",
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.0.0",
