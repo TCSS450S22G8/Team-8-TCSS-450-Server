@@ -166,4 +166,46 @@ router.post("/accept", (request, response) => {
         });
 });
 
+/**
+ * @api {get} /contacts/retrieve/:memberid Request for all friends user has
+ * @apiName GetFriends
+ * @apiGroup Contacts
+ *
+ * @apiParam {Number} memberid of user
+ *
+ * @apiSuccess (Success 200) {json} Success Array of json objects of users friends
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *      [
+ *          {
+ *              "email": "test@test.com"
+ *              "username": "test username"
+ *          }
+ *          ...
+ *      ]
+ *
+ *
+ * @apiError (400: Invalid memberid) {String} message "Invalid Member ID"
+ *
+ */
+router.get("/retrieve/:memberid", (request, response) => {
+    const { memberid } = request.params;
+
+    let query =
+        "SELECT MEMBERS.EMAIL, MEMBERS.USERNAME FROM (SELECT MEMBERID_B FROM " +
+        "CONTACTS WHERE MEMBERID_A = $1 AND VERIFIED = 1) AS B JOIN MEMBERS ON " +
+        "B.MEMBERID_B = MEMBERS.MEMBERID";
+    let values = [memberid];
+
+    pool.query(query, values)
+        .then((result) => {
+            response.status(200).send(result.rows);
+        })
+        .catch((error) => {
+            response.status(400).send({
+                message: "Invalid Member ID",
+            });
+        });
+});
+
 module.exports = router;
