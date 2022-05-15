@@ -208,4 +208,72 @@ router.get("/retrieve/:memberid", (request, response) => {
         });
 });
 
+/**
+ * @api {post} /contacts/delete Allows user to delete a friend or pending friend
+ * @apiName postDeleteFriend
+ * @apiGroup Contacts
+ *
+ * @apiParam {String} memberid
+ * @apiParam {String} email
+ *
+ * @apiParamExample {json} Request-Example:
+ *           {
+ *            "memberid": "1",
+ *            "email": "test@test.com"
+ *           }
+ *
+ *
+ * @apiSuccess {String} Friend was successfully deleted from contacts!
+ *
+ *  * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "message": "Friend was successfully deleted from contacts!"
+ *     }
+ *
+ * @apiError (400: Invalid Email) {String} message "Invalid email"
+ *
+ * @apiError (500: Database Error) {String} message "Error"
+ *
+ */
+router.post("/delete", (request, response) => {
+    const userDeleting = request.body.memberid;
+    const beingDeletedEmail = request.body.email;
+
+    let query =
+        "SELECT MEMBERS.MEMBERID FROM MEMBERS WHERE UPPER(MEMBERS.EMAIL) = UPPER($1)";
+    let values = [beingDeletedEmail];
+
+    pool.query(query, values)
+        .then((result) => {
+            if (result.rowCount == 0) {
+                response.status(400).send({
+                    message: "Invalid email",
+                });
+                return;
+            }
+            query =
+                "DELETE FROM CONTACTS WHERE (MEMBERID_A = $1 AND MEMBERID_B = $2) OR (MEMBERID_A = $2 AND MEMBERID_B = $1)";
+            values = [userDeleting, result.rows[0].memberid];
+
+            pool.query(query, values)
+                .then((result) => {
+                    response.status(200).send({
+                        message:
+                            "Friend was successfully deleted from contacts!",
+                    });
+                })
+                .catch((error) => {
+                    response.status(500).send({
+                        message: error + "\nError",
+                    });
+                });
+        })
+        .catch((error) => {
+            response.status(500).send({
+                message: error + "\nError",
+            });
+        });
+});
+
 module.exports = router;
