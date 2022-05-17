@@ -26,10 +26,26 @@ const pool = require("../utilities").pool;
 
 require("dotenv").config();
 
-// Verifies email exists and sends user a verification email to confirm ownership
+/**
+ * @api {post} /forgot-password/:email Post Request to reset users password
+ * @apiName PostForgotPassword
+ * @apiGroup Forgot Password
+ *
+ * @apiDescription Request password reset by sending email verification to user.
+ *
+ * @apiParam {String} email users email
+ *
+ * @apiSuccess (Success 201) {boolean} success true when the verification email is sent to user
+ *
+ * @apiError (400: Invalid Email) {String} message "Invalid email"
+ *
+ * @apiError (401: Email Sent Error) {String} message "Error sending email, possible incorrect email"
+ *
+ * @apiError (400: Email Does Not Exists) {String} message "Email does not exists"
+ *
+ */
 router.post("/:email", (request, response) => {
     const email = request.params.email;
-    console.log(email);
     if (!isValidEmail(email)) {
         response.status(400).send({
             message: "Invalid email",
@@ -85,7 +101,7 @@ router.post("/:email", (request, response) => {
                     });
                     console.log(error);
                 } else {
-                    //We successfully added the user!
+                    //We successfully sent the email to the user!
                     response.status(201).send({
                         success: true,
                         email: email,
@@ -103,11 +119,26 @@ router.post("/:email", (request, response) => {
     });
 });
 
-// User clicks the link, sets the flag to 1 for forgotPasswordVerification
-router.get("/:token", (req, res) => {
-    const { token } = req.params;
+/**
+ * @api {get} /forget-password/:token Request to update users flag for password reset verification
+ * @apiName GetSetFlag
+ * @apiGroup Forgot Password
+ *
+ * @apiDescription Request to update users flag for password reset verification.
+ *
+ * @apiParam {JWT} JWT the token in the link of the verification email.
+ *
+ * @apiSuccess {String} message "Email verifified successfully"
+ *
+ * @apiError (400: No Update) {String} message "No update"
+ * @apiError (400: Failed Verification) {String} message "Verification failed to update"
+ *
+ * @apiUse JSONError
+ */
+router.get("/:token", (request, response) => {
+    const { token } = request.params;
 
-    // Verifing the JWT token
+    // Verifying the JWT token
     jwt.verify(token, process.env.JSON_WEB_TOKEN, function (err, decoded) {
         if (err) {
             console.log(err);
@@ -115,26 +146,50 @@ router.get("/:token", (req, res) => {
                 "Email verification failed, possibly the link is invalid or expired"
             );
         } else {
-            // decode the token created with const {token} = req.params; above
+            // decode the token created with const {token} = request.params; above
             const decoded = jwt.decode(token);
-            console.log(decoded);
-            console.log(decoded.memberid);
             let query =
                 "UPDATE MEMBERS SET forgotPassVerification = 1 WHERE memberid = $1";
             const values = [decoded.memberid];
-            pool.query(query, values).catch((error) => {
-                response.status(400).send({
-                    message: "verification failed to update",
-                    detail: error.detail,
+            pool.query(query, values)
+                .then((result) => {
+                    if (result.rowCount == 1) {
+                        response.status(200).send({
+                            message: "Email verifified successfully",
+                        });
+                    } else {
+                        response.status(400).send({
+                            message: "No update happened",
+                        });
+                    }
+                })
+                .catch((error) => {
+                    response.status(400).send({
+                        message: "Verification failed to update",
+                        detail: error.detail,
+                    });
                 });
-                //console.log(error)
-            });
-            res.send("Email verifified successfully");
         }
     });
 });
 
-// Checks if the user clicked the link (front end button check)
+/**
+ * @api {get} /forget-password/check-flag/:email Request to check if user has clicked link in email verification
+ * @apiName GetPingVerificationFlag
+ * @apiGroup Forgot Password
+ *
+ * @apiDescription Request to get confirmation that the user clicked the link in email verification.
+ *
+ * @apiParam {String} email the email to check if the user has clicked the link in email verification.
+ *
+ * @apiSuccess {String} message "Successfully verified for password reset"
+ *
+ * @apiError (400: Not Verified) {String} message "User has not successfully verified for password reset"
+ *
+ * @apiError (500: Database Failed) {String} message "Database Query Failed"
+ *
+ * @apiUse JSONError
+ */
 router.get("/check-flag/:email", (request, response) => {
     const email = request.params.email;
     let query = "SELECT * FROM MEMBERS WHERE EMAIL = $1";
@@ -144,7 +199,7 @@ router.get("/check-flag/:email", (request, response) => {
         .then((result) => {
             if (
                 result.rowCount == 1 &&
-                result.rows[0].forgotPassVerification == 1
+                result.rows[0].forgotpassverification == 1
             ) {
                 response.status(200).send({
                     message: "Successfully verified for password reset",
@@ -164,6 +219,37 @@ router.get("/check-flag/:email", (request, response) => {
 });
 
 // Updates the users password in the database
+/**
+ * @api {put} /forget-password/new-password Request to update user password with a new password.
+ * @apiName PutResetPassword
+ * @apiGroup Forgot Password
+ *
+ * @apiDescription Request to reset users password with a new password.
+ *
+ * @apiBody {JSON} JSON Object containing user email and password.
+ *
+ * @apiBodyExample {json} Request-Body-Example:
+ *  {
+ *      "email":"testFirst",
+ *      "password":"test12345"
+ *  }
+ *
+ * @apiSuccess {String} message "User has successfully reset password"
+ *
+ * @apiError (400: Invalid Password) {String} message "Password does not meet the requirements"
+ *
+ * @apiError (400: Invalid Email) {String} message "Email does not meet the requirements"
+ *
+ * @apiError (400: Flag Not Updated) {String} message "Flag not reverted"
+ *
+ * @apiError (500: Database Failed) {String} message "Database Query Failed"
+ *
+ * @apiError (400: Failed Update) {String} message "Update Failed"
+ *
+ * @apiError (400: Invalid Email) {String} message "Invalid user email or user has not verified email"
+ *
+ * @apiUse JSONError
+ */
 router.put("/new-password", (request, response) => {
     const email = request.body.email;
     const password = request.body.password;
@@ -186,7 +272,7 @@ router.put("/new-password", (request, response) => {
         .then((result) => {
             if (
                 result.rowCount == 1 &&
-                result.rows[0].forgotPassVerification == 1
+                result.rows[0].forgotpassverification == 1
             ) {
                 let salt = generateSalt(32);
                 let salted_hash = generateHash(request.body.password, salt);
@@ -198,7 +284,7 @@ router.put("/new-password", (request, response) => {
                     .then((result) => {
                         if (result.rowCount == 1) {
                             query =
-                                "UPDATE forgotPassVerification = 0 WHERE EMAIL = $1";
+                                "UPDATE MEMBERS SET forgotPassVerification = 0 WHERE EMAIL = $1";
                             values = [email];
 
                             pool.query(query, values)

@@ -9,6 +9,9 @@
         "signin",
         "change password",
         "get weather",
-        "contacts"
+        "contacts",
+        "chats",
+        "forgot password",
+        "messages"
     ]
 }

@@ -427,14 +427,19 @@ router.delete(
  * @apiDescription Deletes the chat room if the user owns it and it is a group chat.
  *
  * @apiParam {Number} chatId the chat to delete the user from
+ *
  * @apiParam {JWT} JWT the jwt of the user who wants to delete the chat
  *
  * @apiSuccess {String} success Successfully deleted chatroom
  *
  * @apiError (400: Missing Required Information) {String} message "Missing required information"
+ *
  * @apiError (400: Missing Required Information) {String} message "Malformed parameter. chatId and memberId must be a number"
+ *
  * @apiError (404: Chat ID Not Found) {String} message "Chat ID not found"
+ *
  * @apiError (400: Not Owner) {String} message "You do not own this chat."
+ *
  * @apiError (400: SQL Error) {String} message "SQL Error"
  *
  *
@@ -523,7 +528,7 @@ router.delete(
  *
  * @apiHeader {String} memberid memberid of the user
  *
- * @apiSuccess (Success 200) {Array of JSON Onjects} success true when retrieving all chats for user
+ * @apiSuccess (Success 200) {JSONObject[]} success true when retrieving all chats for user
  *
  * @apiError (400: Unknown user) {String} message "unknown email address"
  *
