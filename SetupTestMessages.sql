@@ -53,9 +53,9 @@ WHERE Email='test3@test.com';
 
 --Add the User test3 (password is: test12345)
 INSERT INTO 
-    Members(FirstName, LastName, Username, Email)
+    Members(MemberId, FirstName, LastName, Username, Email)
 VALUES
-    ('test3First', 'test3Last', 'test3', 'test3@test.com');
+    (90,'test3First', 'test3Last', 'test3', 'test3@test.com');
 INSERT INTO 
     Credentials(MemberID, SaltedHash, Salt)
 VALUES
@@ -65,8 +65,10 @@ VALUES
 INSERT INTO
     chats(chatid, owner, name)
 VALUES
-    (1, 5,'Global Chat')
+    (1, 90,'Global Chat'),
+    (2, 3, 'Second Chat')
 RETURNING *;
+
 
 --Add the three test users to Global Chat
 INSERT INTO 
@@ -78,11 +80,17 @@ WHERE Members.Email='test1@test.com'
     OR Members.Email='test3@test.com'
 RETURNING *;
 
+--Add the three test users to Global Chat
+INSERT INTO 
+    ChatMembers(ChatId, MemberId)
+Values (2, 2)
+RETURNING *;
+
 --Add Multiple messages to create a conversation
 INSERT INTO 
     Messages(ChatId, Message, MemberId)
 SELECT 
-    1, 
+    2, 
     'Hello Everyone!',
     Members.MemberId
 FROM Members

@@ -107,7 +107,6 @@ router.put(
     "/:chatId/",
     middleware.checkToken,
     (request, response, next) => {
-        console.log(request.headers.authorization);
         //validate on empty parameters
         if (!request.params.chatId) {
             response.status(400).send({
@@ -148,8 +147,6 @@ router.put(
         //validate email exists
         let query = "SELECT * FROM Members WHERE MemberId=$1";
         let values = [request.decoded.memberid];
-
-        console.log(request.decoded);
 
         pool.query(query, values)
             .then((result) => {
@@ -296,7 +293,7 @@ router.get(
 
 /**
  * @api {delete} /chats/:chatId?/:email? Request delete a user from a chat
- * @apiName DeleteChats
+ * @apiName DeleteUserFromChat
  * @apiGroup Chats
  *
  * @apiDescription Does not delete the user associated with the required JWT but
@@ -318,7 +315,7 @@ router.get(
  * @apiUse JSONError
  */
 router.delete(
-    "/:chatId/:email",
+    "/delete/user/:chatId/:email",
     (request, response, next) => {
         //validate on empty parameters
         if (!request.params.chatId || !request.params.email) {
@@ -417,6 +414,103 @@ router.delete(
                 response.status(400).send({
                     message: "SQL Error",
                     error: err,
+                });
+            });
+    }
+);
+
+/**
+ * @api {delete} /chats/delete/chatroom/group/:chatId/:memberid Request delete a chat room
+ * @apiName DeleteChatRoom
+ * @apiGroup Chats
+ *
+ * @apiDescription Deletes the chat room if the user owns it and it is a group chat.
+ *
+ * @apiParam {Number} chatId the chat to delete the user from
+ * @apiParam {JWT} JWT the jwt of the user who wants to delete the chat
+ *
+ * @apiSuccess {String} success Successfully deleted chatroom
+ *
+ * @apiError (400: Missing Required Information) {String} message "Missing required information"
+ * @apiError (400: Missing Required Information) {String} message "Malformed parameter. chatId and memberId must be a number"
+ * @apiError (404: Chat ID Not Found) {String} message "Chat ID not found"
+ * @apiError (400: Not Owner) {String} message "You do not own this chat."
+ * @apiError (400: SQL Error) {String} message "SQL Error"
+ *
+ *
+ * @apiUse JSONError
+ */
+router.delete(
+    "/delete/chatroom/group/:chatId/",
+    middleware.checkToken,
+    (request, response, next) => {
+        console.log(request.decoded.memberid);
+        //validate on empty parameters
+        if (!request.params.chatId || !request.decoded.memberid) {
+            response.status(400).send({
+                message: "Missing required information",
+            });
+        } else if (
+            isNaN(request.params.chatId) &&
+            isNaN(request.decoded.memberid)
+        ) {
+            response.status(400).send({
+                message:
+                    "Malformed parameter. chatId and memberId must be a number",
+            });
+        } else {
+            next();
+        }
+    },
+    (request, response, next) => {
+        //validate chat id exists and the user is the owner of the chat
+        let query = "SELECT * FROM CHATS WHERE ChatId=$1";
+        let values = [request.params.chatId];
+
+        pool.query(query, values)
+            .then((result) => {
+                console.log(result.rows[0].owner);
+                if (result.rowCount == 0) {
+                    response.status(404).send({
+                        message: "Chat ID not found",
+                    });
+                } else if (request.decoded.memberid != result.rows[0].owner) {
+                    response.status(400).send({
+                        message: "You do not own this chat.",
+                    });
+                } else {
+                    next();
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        //delete the chat from the database
+        let query = "DELETE FROM CHATS WHERE CHATID = $1";
+        let values = [request.params.chatId];
+
+        pool.query(query, values)
+            .then((result) => {
+                console.log(result);
+                if (result.rowCount == 0) {
+                    response.status(404).send({
+                        message: "Chat was not able to be deleted", //Should never hit this
+                    });
+                } else {
+                    response.status(200).send({
+                        message: "Successfully deleted chatroom",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
                 });
             });
     }
