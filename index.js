@@ -35,6 +35,8 @@ app.use("/messages", require("./routes/messages.js"));
 
 app.use("/chats", require("./routes/chats.js"));
 
+app.use("/forgot-password", require("./routes/forgotPassword.js"));
+
 /*
  * Return HTML for the / end point.
  * This is a nice location to document your web service API
