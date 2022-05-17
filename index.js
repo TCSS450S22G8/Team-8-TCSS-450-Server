@@ -31,6 +31,10 @@ app.use("/weather", require("./routes/weather.js"));
 
 app.use("/contacts", require("./routes/contacts.js"));
 
+app.use("/messages", require("./routes/messages.js"));
+
+app.use("/chats", require("./routes/chats.js"));
+
 /*
  * Return HTML for the / end point.
  * This is a nice location to document your web service API

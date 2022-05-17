@@ -106,7 +106,6 @@ router.get(
         const values = [request.auth.email];
         pool.query(theQuery, values)
             .then((result) => {
-                console.log(result.rows);
                 if (result.rowCount == 0) {
                     response.status(404).send({
                         message: "User not found",

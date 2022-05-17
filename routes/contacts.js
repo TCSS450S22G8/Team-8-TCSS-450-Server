@@ -65,7 +65,7 @@ router.post("/add", (request, response) => {
                 });
                 return;
             }
-            console.log(result.rows[0].memberid);
+
             let query =
                 "INSERT INTO CONTACTS(MEMBERID_A, MEMBERID_B) VALUES($1, $2)";
             values = [sender, result.rows[0].memberid];
