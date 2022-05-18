@@ -4,7 +4,8 @@ CREATE TABLE Members (MemberID SERIAL PRIMARY KEY,
 		              LastName VARCHAR(255) NOT NULL,
                       Username VARCHAR(255) NOT NULL UNIQUE,
                       Email VARCHAR(255) NOT NULL UNIQUE,
-                      Verification INT DEFAULT 0
+                      Verification INT DEFAULT 0,
+                      forgotPassVerification INT DEFAULT 0
 );
 
 DROP TABLE IF EXISTS Credentials CASCADE;
@@ -27,7 +28,7 @@ CREATE TABLE Contacts(PrimaryKey SERIAL PRIMARY KEY,
 
 DROP TABLE IF EXISTS Chats;
 CREATE TABLE Chats (ChatID SERIAL PRIMARY KEY,
-                    Owner INT NOT NULL,
+                    Owner INT,
                     Name VARCHAR(255),
                     FOREIGN KEY(Owner) REFERENCES Members(MemberID)
 );
@@ -36,7 +37,7 @@ DROP TABLE IF EXISTS ChatMembers;
 CREATE TABLE ChatMembers (ChatID INT NOT NULL,
                           MemberID INT NOT NULL,
                           FOREIGN KEY(MemberID) REFERENCES Members(MemberID),
-                          FOREIGN KEY(ChatID) REFERENCES Chats(ChatID)
+                          FOREIGN KEY(ChatID) REFERENCES Chats(ChatID) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS Messages;
@@ -45,7 +46,7 @@ CREATE TABLE Messages (PrimaryKey SERIAL PRIMARY KEY,
                        Message VARCHAR(255),
                        MemberID INT,
                        FOREIGN KEY(MemberID) REFERENCES Members(MemberID),
-                       FOREIGN KEY(ChatID) REFERENCES Chats(ChatID),
+                       FOREIGN KEY(ChatID) REFERENCES Chats(ChatID) ON DELETE CASCADE,
                        TimeStamp TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp
 );
 
