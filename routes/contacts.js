@@ -14,6 +14,9 @@ const pool = require("../utilities").pool;
 
 const validation = require("../utilities").validation;
 
+const middleware = require("../middleware");
+
+
 const router = express.Router();
 
 /**
@@ -46,8 +49,9 @@ const router = express.Router();
  * @apiError (500: Database Failure) {String} message "Database Query Failed"
  *
  */
-router.post("/add", (request, response) => {
-    const sender = request.body.memberid;
+router.post("/add", middleware.checkToken, (request, response) => {
+    const sender = request.decoded.memberid;
+
     const receiverEmail = request.body.email;
     console.log(sender);
     console.log(receiverEmail);
@@ -118,7 +122,7 @@ router.post("/add", (request, response) => {
  *
  */
 router.post("/accept", (request, response) => {
-    const receiver = request.body.memberid;
+    const receiver = request.decoded.memberid;
     const senderEmail = request.body.email;
 
     let query =
@@ -188,8 +192,8 @@ router.post("/accept", (request, response) => {
  * @apiError (400: Invalid memberid) {String} message "Invalid Member ID"
  *
  */
-router.get("/retrieve/:memberid", (request, response) => {
-    const { memberid } = request.params;
+router.get("/retrieve/", middleware.checkToken, (request, response) => {
+    const memberid = request.decoded.memberid;
 
     let query =
         "SELECT MEMBERS.EMAIL, MEMBERS.USERNAME FROM (SELECT MEMBERID_B FROM " +
@@ -236,10 +240,9 @@ router.get("/retrieve/:memberid", (request, response) => {
  * @apiError (500: Database Error) {String} message "Error"
  *
  */
-router.post("/delete", (request, response) => {
-    const userDeleting = request.body.memberid;
+router.post("/delete", middleware.checkToken, (request, response) => {
+    const userDeleting = request.decoded.memberid;
     const beingDeletedEmail = request.body.email;
-
     let query =
         "SELECT MEMBERS.MEMBERID FROM MEMBERS WHERE UPPER(MEMBERS.EMAIL) = UPPER($1)";
     let values = [beingDeletedEmail];

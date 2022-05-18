@@ -50,6 +50,7 @@ let isStringProvided = validation.isStringProvided;
  */
 router.post(
     "/",
+    middleware.checkToken,
     (request, response, next) => {
         if (!isStringProvided(request.body.name)) {
             response.status(400).send({
@@ -63,7 +64,7 @@ router.post(
         let insert = `INSERT INTO Chats(Name, Owner)
                   VALUES ($1,$2)
                   RETURNING ChatId`;
-        let values = [request.body.name, request.body.memberid];
+        let values = [request.body.name, request.decoded.memberid];
         pool.query(insert, values)
             .then((result) => {
                 response.send({
@@ -443,8 +444,9 @@ router.delete(
  */
 router.get(
     "/get",
+    middleware.checkToken,
     (request, response, next) => {
-        if (!isStringProvided(request.header.memberid)) {
+        if (!isStringProvided(request.decoded.memberid)) {
             response.status(400).send({
                 message: "Missing memberid",
             });
@@ -455,7 +457,7 @@ router.get(
     (request, response) => {
         let query =
             "SELECT CHATS.NAME, CHATS.CHATID FROM CHATMEMBERS INNER JOIN CHATS ON CHATMEMBERS.CHATID = CHATS.CHATID WHERE MEMBERID = $1";
-        let values = [request.header.memberid];
+        let values = [request.decoded.memberid];
         pool.query(insert, values)
             .then((result) => {
                 response.send({
