@@ -557,12 +557,9 @@ router.get(
         let query =
             "SELECT CHATS.NAME, CHATS.CHATID FROM CHATMEMBERS INNER JOIN CHATS ON CHATMEMBERS.CHATID = CHATS.CHATID WHERE MEMBERID = $1";
         let values = [request.decoded.memberid];
-        pool.query(insert, values)
+        pool.query(query, values)
             .then((result) => {
-                response.send({
-                    success: true,
-                    chatIDS: result.rows,
-                });
+                response.send(result.rows);
             })
             .catch((err) => {
                 response.status(400).send({
