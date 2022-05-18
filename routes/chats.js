@@ -115,7 +115,7 @@ router.put(
             });
         } else if (isNaN(request.params.chatId)) {
             response.status(400).send({
-                message: "Malformed parameter. chatId must be a number",
+                message: "Malformed parameter. chatId must be a number PUT",
             });
         } else {
             next();
@@ -325,7 +325,7 @@ router.delete(
             });
         } else if (isNaN(request.params.chatId)) {
             response.status(400).send({
-                message: "Malformed parameter. chatId must be a number",
+                message: "Malformed parameter. chatId must be a number DELETE",
             });
         } else {
             next();
@@ -542,9 +542,10 @@ router.delete(
  * @apiUse JSONError
  */
 router.get(
-    "/get",
+    "/get-chats",
     middleware.checkToken,
     (request, response, next) => {
+        console.log(request.decoded.memberid);
         if (!isStringProvided(request.decoded.memberid)) {
             response.status(400).send({
                 message: "Missing memberid",
