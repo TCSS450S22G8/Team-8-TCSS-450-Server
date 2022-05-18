@@ -16,6 +16,8 @@ const pool = require("../utilities/exports").pool;
 
 const router = express.Router();
 
+const middleware = require("../middleware");
+
 const msg_functions = require("../utilities/exports").messaging;
 
 const validation = require("../utilities").validation;
@@ -52,6 +54,7 @@ let isStringProvided = validation.isStringProvided;
  */
 router.post(
     "/",
+    middleware.checkToken,
     (request, response, next) => {
         //validate on empty parameters
         if (
