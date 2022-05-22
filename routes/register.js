@@ -14,7 +14,9 @@ const express = require("express");
 // For email verification
 require("dotenv").config();
 
-const nodemailer = require("nodemailer");
+//OAuth Import
+const sendEmail = require("../utilities/OAuthUtils").sendEmail;
+
 const jwt = require("jsonwebtoken");
 const {
     isValidEmail,
@@ -134,21 +136,6 @@ router.post(
         let values = [request.memberid, salted_hash, salt];
         pool.query(theQuery, values)
             .then((result) => {
-                // Creating email to send to user for verification
-                const transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 587,
-                    protocol: "tls",
-                    service: "gmail",
-                    secure: false,
-                    auth: {
-                        user: process.env.EMAIL,
-                        pass: process.env.PASSWORD,
-                    },
-                    debug: false,
-                    logger: true,
-                });
-
                 const token = jwt.sign(
                     {
                         memberid: request.memberid,
@@ -168,28 +155,10 @@ router.post(
                     // This would be the text of email body
                     text: `Hi! To register please follow the link https://tcss-450-sp22-group-8.herokuapp.com/verify/${token}`,
                 };
-                transporter.sendMail(
-                    mailConfigurations,
-                    function (error, info) {
-                        if (error) {
-                            console.log(error);
-                            response.status(401).send({
-                                message:
-                                    "Error sending email, possible incorrect email" +
-                                    error,
-                            });
-                            console.log(error);
-                        } else {
-                            //We successfully added the user!
-                            response.status(201).send({
-                                success: true,
-                                email: request.body.email,
-                            });
-                            console.log("Email Sent Successfully");
-                            console.log(info);
-                        }
-                    }
-                );
+                sendEmail(mailConfigurations);
+                response.status(200).send({
+                    message: "Email for account verification succesfully sent!",
+                });
                 return;
             })
             .catch((error) => {

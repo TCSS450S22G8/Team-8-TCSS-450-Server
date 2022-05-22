@@ -55,7 +55,7 @@ WHERE Email='test3@test.com';
 INSERT INTO 
     Members(MemberId, FirstName, LastName, Username, Email)
 VALUES
-    (90,'test3First', 'test3Last', 'test3', 'test3@test.com');
+    (1,'test3First', 'test3Last', 'test3', 'test3@test.com');
 INSERT INTO 
     Credentials(MemberID, SaltedHash, Salt)
 VALUES
@@ -65,7 +65,7 @@ VALUES
 INSERT INTO
     chats(chatid, owner, name)
 VALUES
-    (1, 90,'Global Chat'),
+    (1, 1,'Global Chat'),
     (2, 3, 'Second Chat')
 RETURNING *;
 

@@ -18,8 +18,10 @@ const {
     isValidPassword,
 } = require("../utilities/validationUtils");
 const router = express.Router();
-const nodemailer = require("nodemailer");
 const { generateSalt, generateHash } = require("../utilities");
+
+//OAuth
+const sendEmail = require("../utilities/OAuthUtils").sendEmail;
 
 //Access the connection to Heroku Database
 const pool = require("../utilities").pool;
@@ -57,21 +59,6 @@ router.post("/:email", (request, response) => {
 
     pool.query(query, values).then((result) => {
         if (result.rowCount == 1) {
-            // Creating email to send to user for forgot password verification
-            const transporter = nodemailer.createTransport({
-                host: "smtp.gmail.com",
-                port: 587,
-                protocol: "tls",
-                service: "gmail",
-                secure: false,
-                auth: {
-                    user: process.env.EMAIL,
-                    pass: process.env.PASSWORD,
-                },
-                debug: false,
-                logger: true,
-            });
-
             const token = jwt.sign(
                 {
                     memberid: result.rows[0].memberid,
@@ -91,24 +78,30 @@ router.post("/:email", (request, response) => {
                 // This would be the text of email body
                 text: `Hi! To reset your password please follow the link https://tcss-450-sp22-group-8.herokuapp.com/forgot-password/${token}`,
             };
-            transporter.sendMail(mailConfigurations, function (error, info) {
-                if (error) {
-                    console.log(error);
-                    response.status(401).send({
-                        message:
-                            "Error sending email, possible incorrect email" +
-                            error,
-                    });
-                    console.log(error);
-                } else {
-                    //We successfully sent the email to the user!
-                    response.status(201).send({
-                        success: true,
-                        email: email,
-                    });
-                    console.log("Email Sent Successfully");
-                    console.log(info);
-                }
+            // transporter.sendMail(mailConfigurations, function (error, info) {
+            //     if (error) {
+            //         console.log(error);
+            //         response.status(401).send({
+            //             message:
+            //                 "Error sending email, possible incorrect email" +
+            //                 error,
+            //         });
+            //         console.log(error);
+            //     } else {
+            //         //We successfully sent the email to the user!
+            //         response.status(201).send({
+            //             success: true,
+            //             email: email,
+            //         });
+            //         console.log("Email Sent Successfully");
+            //         console.log(info);
+            //     }
+            // });
+            sendEmail(mailConfigurations);
+            //We successfully sent the email to the user!
+            response.status(201).send({
+                success: true,
+                email: email,
             });
             return;
         } else {
@@ -154,9 +147,9 @@ router.get("/:token", (request, response) => {
             pool.query(query, values)
                 .then((result) => {
                     if (result.rowCount == 1) {
-                        response.set('Content-Type', 'text/html');
-                        response.setHeader('Content-Type', 'text/html');
-                        response.send("<html lang=\"en\">  <head>   <meta charset=\"utf-8\" />   <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title></title>   <link href='https://fonts.googleapis.com/css?family=Lato:300,400|Montserrat:700' rel='stylesheet' type='text/css'>   <style>     @import url(//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css);     @import url(//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css);   </style>   <link rel=\"stylesheet\" href=\"https://2-22-4-dot-lead-pages.appspot.com/static/lp918/min/default_thank_you.css\">   <script src=\"https://2-22-4-dot-lead-pages.appspot.com/static/lp918/min/jquery-1.9.1.min.js\"></script>   <script src=\"https://2-22-4-dot-lead-pages.appspot.com/static/lp918/min/html5shiv.js\"></script> </head>  <body>   <header class=\"site-header\" id=\"header\">     <h1 class=\"site-header__title\" data-lead-id=\"site-header-title\">THANK YOU!</h1>   </header>    <div class=\"main-content\">     <i class=\"fa fa-check main-content__checkmark\" id=\"checkmark\"></i>     <p class=\"main-content__body\" data-lead-id=\"main-content-body\">Thanks you for verifying, you can now reset your password!</p>   </div>    <footer class=\"site-footer\" id=\"footer\">     <p class=\"site-footer__fineprint\" id=\"fineprint\">SlapChat</p>   </footer> </body>  </html>");
+                        response.status(200).send({
+                            message: "Email verifified successfully",
+                        });
                     } else {
                         response.status(400).send({
                             message: "No update happened",
