@@ -3,6 +3,8 @@ const express = require("express");
 //Create a new instance of express
 const app = express();
 
+require("dotenv").config();
+
 //Access the connection to Heroku Database
 const pool = require("./utilities").pool;
 
