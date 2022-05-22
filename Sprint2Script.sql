@@ -47,7 +47,7 @@ WHERE Email='shilnara@test.com';
 INSERT INTO 
     Members(FirstName, LastName, Username, Email, Verification)
 VALUES
-    ('Sean', 'Logan', 'Seans2', 'sean@test.com', 1),
+    ('Sean', 'Logan', 'Seans', 'sean@test.com', 1),
     ('Rin', 'Pham', 'Rins', 'rin@test.com', 1),
     ('Shilnara', 'Dam', 'Shilnaras', 'shilnara@test.com', 1),
     ('JenHo', 'Liao', 'JenHos', 'jenho@test.com', 1),
