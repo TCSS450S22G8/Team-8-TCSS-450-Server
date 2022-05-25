@@ -49,7 +49,7 @@ function sendFriendRequest(token, requestee) {
 function deleteFriend(token, deleter) {
     var data = {
         type: "deleteFriend",
-        email: deleter.email,
+        message: deleter + " deleted you from their contacts.",
     };
 
     pushyAPI.sendPushNotification(data, token, {}, function (err, id) {
