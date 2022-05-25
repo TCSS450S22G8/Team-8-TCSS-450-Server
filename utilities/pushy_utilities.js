@@ -63,11 +63,12 @@ function deleteFriend(token, deleter) {
     });
 }
 
+//CHATROOMS
 //added to a chat
 function addUserToChat(token, adder) {
     var data = {
         type: "addedUserToChat",
-        // message: adder.username + " added you to " adder.chat
+        message: adder.username + " added you to " + adder.chatname,
     };
 
     pushyAPI.sendPushNotification(data, token, {}, function (err, id) {
@@ -85,4 +86,5 @@ module.exports = {
     sendMessageToIndividual,
     sendFriendRequest,
     deleteFriend,
+    addUserToChat,
 };

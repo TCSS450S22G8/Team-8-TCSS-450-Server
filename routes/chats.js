@@ -18,7 +18,10 @@ const router = express.Router();
 
 const middleware = require("../middleware");
 
+const chat_funtions = require("../utilities/exports").messaging;
+
 const jwt = require("jsonwebtoken");
+const { response } = require("express");
 const validation = require("../utilities").validation;
 let isStringProvided = validation.isStringProvided;
 
@@ -82,8 +85,8 @@ router.post(
 );
 
 /**
- * @api {put} /chats/:chatId? Request add a user to a chat
- * @apiName PutChats
+ * @api {put} /chats/addSelf/:chatId? Request add yourself to a chat
+ * @apiName PutChatsSelf
  * @apiGroup Chats
  *
  * @apiDescription Adds the user associated with the required JWT.
@@ -105,7 +108,7 @@ router.post(
  * @apiUse JSONError
  */
 router.put(
-    "/:chatId/",
+    "/addSelf/:chatId/",
     middleware.checkToken,
     (request, response, next) => {
         //validate on empty parameters
@@ -138,7 +141,7 @@ router.put(
             })
             .catch((error) => {
                 response.status(400).send({
-                    message: "SQL Error",
+                    message: "SQL Error 1",
                     error: error,
                 });
             });
@@ -162,7 +165,7 @@ router.put(
             })
             .catch((error) => {
                 response.status(400).send({
-                    message: "SQL Error",
+                    message: "SQL Error 2",
                     error: error,
                 });
             });
@@ -184,12 +187,12 @@ router.put(
             })
             .catch((error) => {
                 response.status(400).send({
-                    message: "SQL Error",
+                    message: "SQL Error 3",
                     error: error,
                 });
             });
     },
-    (request, response) => {
+    (request, response, next) => {
         //Insert the memberId into the chat
         let insert = `INSERT INTO ChatMembers(ChatId, MemberId)
                   VALUES ($1, $2)
@@ -197,13 +200,220 @@ router.put(
         let values = [request.params.chatId, request.decoded.memberid];
         pool.query(insert, values)
             .then((result) => {
-                response.send({
-                    success: true,
+                response.status(200).send({
+                    message: "we good.",
                 });
             })
             .catch((err) => {
                 response.status(400).send({
-                    message: "SQL Error",
+                    message: "SQL Error 4",
+                    error: err,
+                });
+            });
+    }
+);
+
+/**
+ * @api {put} /chats/addOther/:chatId? Request add a user to a chat
+ * @apiName PutChatsOthers
+ * @apiGroup Chats
+ *
+ * @apiDescription Adds a user associated with the required email
+ *
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ *
+ * @apiParam {Number} chatId the chat to add the user to
+ *
+ * @apiBodyExample {json} Request-Body-Example:
+ *  {
+ *      "email":"testEmail@fake.email",
+ *  }
+ *
+ * @apiSuccess {boolean} success true when the name is inserted
+ *
+ * @apiError (404: Chat Not Found) {String} message "chatID not found"
+ * @apiError (404: Email Not Found) {String} message "email not found"
+ * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number"
+ * @apiError (400: Duplicate Email) {String} message "user already joined"
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ *
+ * @apiError (400: SQL Error) {String} message the reported SQL error details
+ *
+ * @apiUse JSONError
+ */
+router.put(
+    "/addOther/:chatId/",
+    middleware.checkToken,
+    (request, response, next) => {
+        //validate on empty parameters
+        if (!request.params.chatId) {
+            response.status(400).send({
+                message: "Missing required information",
+            });
+        } else if (isNaN(request.params.chatId)) {
+            response.status(400).send({
+                message: "Malformed parameter. chatId must be a number PUT",
+            });
+        } else {
+            next();
+        }
+    },
+    (request, response, next) => {
+        //validate chat id exists
+        let query = "SELECT * FROM CHATS WHERE ChatId=$1";
+        let values = [request.params.chatId];
+
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 0) {
+                    response.status(404).send({
+                        message: "Chat ID not found",
+                    });
+                } else {
+                    request.chatname = result.rows[0].name;
+                    next();
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error 1",
+                    error: error,
+                });
+            });
+        //code here based on the results of the query
+    },
+    (request, response, next) => {
+        //validate email exists for the person attempting to add someone
+        let query = "SELECT * FROM Members WHERE MemberId=$1";
+        let values = [request.decoded.memberid];
+
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 0) {
+                    response.status(404).send({
+                        message: "email not found",
+                    });
+                } else {
+                    //user found
+                    request.username = result.rows[0].username;
+                    next();
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error 2",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        //validate email of person adding someone does not already exist in the chat
+        let query = "SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2";
+        let values = [request.params.chatId, request.decoded.memberid];
+
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    // the user attempting to add someone is in the chatroom, continue
+                    next();
+                } else {
+                    // the user is not in the chat
+                    response.status(400).send({
+                        message: "user does not have access to this chat",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error 3",
+                    error: error,
+                });
+            });
+    },
+    // get member id of person being added
+    (request, response, next) => {
+        let query = "SELECT MEMBERID FROM MEMBERS WHERE MEMBERS.EMAIL=$1";
+        let values = [request.body.email];
+        pool.query(query, values)
+            .then((response) => {
+                if (response.rowCount > 0) {
+                    request.addedMemberId = response.rows[0].memberid;
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "Email of friend does not exist.",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error 4",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        let query =
+            "SELECT * FROM CHATMEMBERS WHERE CHATID = $1 AND MEMBERID = $2";
+        let values = [request.params.chatId, request.addedMemberId];
+        pool.query(query, values)
+            .then((result) => {
+                console.log(request.params.chatId);
+                console.log(request.addedMemberId);
+                console.log(result.rowCount);
+                if (result.rowCount == 0) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "User already exists in chatroom.",
+                    });
+                }
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error 5",
+                    error: err,
+                });
+            });
+    },
+    (request, response, next) => {
+        //Insert the memberId into the chat
+        let insert = `INSERT INTO ChatMembers(ChatId, MemberId)
+                  VALUES ($1, $2)
+                  RETURNING *`;
+        let values = [request.params.chatId, request.addedMemberId];
+        pool.query(insert, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "User already exists in chatroom.",
+                    });
+                }
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error 4",
+                    error: err,
+                });
+            });
+    },
+    (request, response) => {
+        let query = "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
+        let values = [request.addedMemberId];
+        pool.query(query, values)
+            .then((results) => {
+                results.rows.forEach((entry) => {
+                    chat_funtions.addUserToChat(entry.token, request);
+                });
+                response.status(200).send({
+                    message: "Successfully added your friend to the chat!",
+                });
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error 4",
                     error: err,
                 });
             });

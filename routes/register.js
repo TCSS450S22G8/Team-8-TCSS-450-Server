@@ -45,7 +45,7 @@ const router = express.Router();
  * @apiParam {String} email a users email *unique
  * @apiParam {String} password a users password
  *
- * @apiParamExample {json} Request-Body-Example:
+ * @apiBodyExample {json} Request-Body-Example:
  *  {
  *      "first":"testFirst",
  *      "last":"testLast",
