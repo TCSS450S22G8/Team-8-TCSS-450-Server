@@ -29,6 +29,7 @@ CREATE TABLE Contacts(PrimaryKey SERIAL PRIMARY KEY,
 DROP TABLE IF EXISTS Chats;
 CREATE TABLE Chats (ChatID SERIAL PRIMARY KEY,
                     Owner INT,
+                    Group INT DEFAULT 0,
                     Name VARCHAR(255),
                     FOREIGN KEY(Owner) REFERENCES Members(MemberID)
 );

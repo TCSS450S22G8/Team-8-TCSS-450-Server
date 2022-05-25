@@ -82,11 +82,11 @@ VALUES
 
 --Create Chat Rooms
 INSERT INTO
-    Chats(ChatId, Owner, Name)
+    Chats(ChatId, Owner, Group, Name)
 VALUES
-    (99, 1,'Gaming'),
-    (100, 2,'Studying'),
-    (101, 3,'Coding Questions');
+    (99, 1, 1,'Gaming'),
+    (100, 2, 1, 'Studying'),
+    (101, 3, 1, 'Coding Questions');
 
 
 

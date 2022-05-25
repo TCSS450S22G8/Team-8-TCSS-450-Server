@@ -16,6 +16,7 @@ const validation = require("../utilities").validation;
 
 const middleware = require("../middleware");
 
+const contact_functions = require("../utilities/exports").messaging;
 
 const router = express.Router();
 
@@ -73,12 +74,48 @@ router.post("/add", middleware.checkToken, (request, response) => {
             let query =
                 "INSERT INTO CONTACTS(MEMBERID_A, MEMBERID_B) VALUES($1, $2)";
             values = [sender, result.rows[0].memberid];
-
+            memberid = result.rows[0].memberid;
             pool.query(query, values)
                 .then((result) => {
-                    response.status(200).send({
-                        message: "Sent Contact Request",
-                    });
+                    let query =
+                        "SELECT USERNAME, EMAIL FROM MEMBERS WHERE MEMBERID = $1";
+                    let values = [sender];
+                    pool.query(query, values)
+                        .then((result) => {
+                            let username = result.rows[0].username;
+                            // send a notification of this message to ALL members with registered tokens
+                            let query = `SELECT token FROM Push_Token
+                                        WHERE memberid=$1`;
+                            let values = [memberid];
+                            pool.query(query, values)
+                                .then((result) => {
+                                    console.log(username);
+                                    console.log(memberid);
+                                    console.log(result.rows);
+                                    result.rows.forEach((entry) =>
+                                        contact_functions.sendFriendRequest(
+                                            entry.token,
+                                            username
+                                        )
+                                    );
+                                    response.status(200).send({
+                                        message:
+                                            "Friend Request Sent Successfully!",
+                                    });
+                                })
+                                .catch((err) => {
+                                    response.status(400).send({
+                                        message:
+                                            "SQL Error on select from push token",
+                                        error: err,
+                                    });
+                                });
+                        })
+                        .catch((err) => {
+                            response.status(500).send({
+                                message: "Database Query Failed",
+                            });
+                        });
                 })
                 .catch((error) => {
                     response.status(500).send({
@@ -217,12 +254,11 @@ router.get("/retrieve/", middleware.checkToken, (request, response) => {
  * @apiName postDeleteFriend
  * @apiGroup Contacts
  *
- * @apiParam {String} memberid
+ * @apiParam {String} JWT passed as header
  * @apiParam {String} email
  *
  * @apiParamExample {json} Request-Example:
  *           {
- *            "memberid": "1",
  *            "email": "test@test.com"
  *           }
  *
@@ -255,16 +291,46 @@ router.post("/delete", middleware.checkToken, (request, response) => {
                 });
                 return;
             }
+            personDeleted = result.rows[0].memberid;
             query =
                 "DELETE FROM CONTACTS WHERE (MEMBERID_A = $1 AND MEMBERID_B = $2) OR (MEMBERID_A = $2 AND MEMBERID_B = $1)";
-            values = [userDeleting, result.rows[0].memberid];
+            values = [userDeleting, personDeleted];
 
             pool.query(query, values)
                 .then((result) => {
-                    response.status(200).send({
-                        message:
-                            "Friend was successfully deleted from contacts!",
-                    });
+                    let query =
+                        "SELECT USERNAME FROM MEMBERS WHERE MEMBERID = $1";
+                    let values = [userDeleting];
+                    pool.query(query, values)
+                        .then((result) => {
+                            username = result.rows[0].username;
+                            let query =
+                                "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
+                            let values = [personDeleted];
+                            pool.query(query, values)
+                                .then((result) => {
+                                    result.rows.forEach((entry) => {
+                                        contact_functions.deleteFriend(
+                                            entry.token,
+                                            username
+                                        );
+                                    });
+                                    response.status(200).send({
+                                        message:
+                                            "Friend was successfully deleted from contacts!",
+                                    });
+                                })
+                                .catch((err) => {
+                                    response.status(500).send({
+                                        message: error + "\nError",
+                                    });
+                                });
+                        })
+                        .catch((err) => {
+                            response.status(500).send({
+                                message: error + "\nError",
+                            });
+                        });
                 })
                 .catch((error) => {
                     response.status(500).send({
