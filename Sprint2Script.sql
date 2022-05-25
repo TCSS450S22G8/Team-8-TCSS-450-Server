@@ -55,7 +55,7 @@ VALUES
     -- ('Charles', 'Bryan', 'Charles', 'charles@test.com', 1)
 
 
---Adding Crentials for Sean
+--Adding Crentials for Team
 INSERT INTO 
     Credentials(MemberID, SaltedHash, Salt)
 VALUES 
@@ -82,7 +82,7 @@ VALUES
 
 --Create Chat Rooms
 INSERT INTO
-    Chats(ChatId, Owner, Group, Name)
+    Chats(ChatId, Owner, GroupChat, Name)
 VALUES
     (99, 1, 1,'Gaming'),
     (100, 2, 1, 'Studying'),

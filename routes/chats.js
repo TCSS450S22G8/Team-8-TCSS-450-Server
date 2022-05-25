@@ -358,9 +358,6 @@ router.put(
         let values = [request.params.chatId, request.addedMemberId];
         pool.query(query, values)
             .then((result) => {
-                console.log(request.params.chatId);
-                console.log(request.addedMemberId);
-                console.log(result.rowCount);
                 if (result.rowCount == 0) {
                     next();
                 } else {
