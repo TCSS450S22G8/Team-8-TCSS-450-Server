@@ -738,8 +738,179 @@ router.get(
 );
 
 /**
+ * @api {get} /chats/private Request to get the private chat's chatid between user and a friend
+ * @apiName GetPrivateChatID
+ * @apiGroup Chats
+ *
+ * @apiHeader {String} jwt jwt of user
+ *
+ * @apiBody {String} email email of friend
+ *
+ * @apiBodyExample
+ *      {
+ *          "email":"test@email.com"
+ *      }
+ *
+ * @apiSuccess (Success 200) {string} chatId of private chat
+ *
+ * @apiError (401: Missing Header) {String} message "Auth token is not supplied"
+ *
+ * @apiError (400: Missing Parameters) {String} message "Missing required information"
+ *
+ * @apiError (400: Unknown user) {String} message "User does not exist"
+ *
+ * @apiError (500: SQL Error) {String} message the reported SQL error details
+ *
+ * @apiError (400: Unknown Friend) {String} message "Friend/email does not exist"
+ *
+ * @apiUse JSONError
+ */
+router.get(
+    "/private",
+    middleware.checkToken,
+    (request, response, next) => {
+        //checking if info exist
+        if (
+            request.body.email === undefined ||
+            !isStringProvided(request.body.email)
+        ) {
+            response.status(400).send({
+                message: "Missing required information",
+            });
+        } else {
+            next();
+        }
+    },
+    (request, response, next) => {
+        //check if the user trying to message friend exist
+        let query = "SELECT * FROM MEMBERS WHERE MEMBERID = $1";
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "User does not exist",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "SQL Error on user memberid check",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        //check if friend exist
+        let query = "SELECT MEMBERID FROM MEMBERS WHERE EMAIL = $1";
+        let values = [request.body.email];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    request.friendMemberid = result.rows[0].memberid;
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "Friend/email does not exist",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "SQL Error on friend email check",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        //check if private chat already exist. if it does exist then send then chatId else continue
+        let query =
+            "select * from chats join (select chatid from chatmembers where memberid = $1 intersect select chatid from chatmembers where memberid = $2) as I on chats.chatid = I.chatid where groupchat = 0";
+        let values = [request.decoded.memberid, request.friendMemberid];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 0) {
+                    next();
+                } else {
+                    response.status(200).send({
+                        message: "Private chat did exist",
+                        chatID: result.rows[0].chatid,
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "SQL Error on getting private chatid",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        //creates a new private chatroom with both members in it and then send the chatId
+        //creates the new chatroom
+        let query =
+            "INSERT INTO CHATS (GROUPCHAT, NAME) VALUES (0, 'PRIVATE') RETURNING *";
+        pool.query(query)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    request.chatId = result.rows[0].chatid;
+                    next();
+                } else {
+                    //should prob never reach here. checked just in case
+                    response.status(500).send({
+                        message:
+                            "SQL Error on creating new private chat room. multiple private chat rooms created or none",
+                        error: error,
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "SQL Error on creating new private chat room",
+                    error: error,
+                });
+            });
+    },
+    (request, response) => {
+        //adding user and friend into that chatroom
+        let query =
+            "INSERT INTO CHATMEMBERS (CHATID, MEMBERID) VALUES ($1, $2), ($1, $3) RETURNING *";
+        let values = [
+            request.chatId,
+            request.decoded.memberid,
+            request.friendMemberid,
+        ];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 2) {
+                    response.status(200).send({
+                        message:
+                            "Private chat did not exist, new one was created",
+                        chatID: result.rows[0].chatid,
+                    });
+                } else {
+                    //should prob never reach here. checked just in case
+                    response.status(500).send({
+                        message:
+                            "SQL Error on adding users to the private chat. adding more than 2 users or none",
+                        error: error,
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "SQL Error on adding users to private chat room",
+                    error: error,
+                });
+            });
+    }
+);
+
+/**
  * @api {get} /chats/:chatId? Request to get the emails of user in a chat
- * @apiName GetChats
+ * @apiName GetEmailOfUsersInChat
  * @apiGroup Chats
  *
  * @apiHeader {String} authorization Valid JSON Web Token JWT

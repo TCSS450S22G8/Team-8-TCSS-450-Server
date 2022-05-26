@@ -12,6 +12,7 @@
         "contacts",
         "chats",
         "forgot password",
-        "messages"
+        "messages",
+        "pushy register"
     ]
 }

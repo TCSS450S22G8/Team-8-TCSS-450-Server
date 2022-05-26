@@ -10,7 +10,7 @@ const middleware = require("../middleware");
 
 /**
  * @api {put} /auth Request to insert a Pushy Token for the user
- * @apiName PutAuth
+ * @apiName PutAuthPushy
  * @apiGroup Auth
  *
  * @apiHeader {String} authorization Valid JSON Web Token JWT
@@ -97,7 +97,7 @@ router.put(
 
 /**
  * @api {delete} /auth Request to delete a Pushy Token for the user
- * @apiName DeleteAuth
+ * @apiName DeleteAuthPushy
  * @apiGroup Auth
  *
  * @apiHeader {String} authorization Valid JSON Web Token JWT

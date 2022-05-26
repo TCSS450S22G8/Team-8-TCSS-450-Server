@@ -229,3 +229,46 @@ WHERE Members.Email = 'sean@test.com'
     OR Members.Email = 'jenho@test.com'
     OR Members.Email = 'levi@test.com';
 
+
+
+--ADD INITIAL MESSAGE TO EACH CHAT
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (99,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (100,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (101,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (102,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (103,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (104,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (105,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (106,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (107,'Welcome to the chat!',6) RETURNING *;
+
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (108,'Welcome to the chat!',6) RETURNING *;
+
