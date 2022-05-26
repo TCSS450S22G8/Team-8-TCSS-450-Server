@@ -766,13 +766,13 @@ router.get(
  * @apiUse JSONError
  */
 router.get(
-    "/private",
+    "/private/:email",
     middleware.checkToken,
     (request, response, next) => {
         //checking if info exist
         if (
-            request.body.email === undefined ||
-            !isStringProvided(request.body.email)
+            request.params.email === undefined ||
+            !isStringProvided(request.params.email)
         ) {
             response.status(400).send({
                 message: "Missing required information",
@@ -805,7 +805,7 @@ router.get(
     (request, response, next) => {
         //check if friend exist
         let query = "SELECT MEMBERID FROM MEMBERS WHERE EMAIL = $1";
-        let values = [request.body.email];
+        let values = [request.params.email];
         pool.query(query, values)
             .then((result) => {
                 if (result.rowCount > 0) {
