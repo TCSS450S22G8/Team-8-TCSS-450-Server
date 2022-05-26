@@ -63,12 +63,53 @@ router.post(
             next();
         }
     },
-    (request, response) => {
+    (request, response, next) => {
         let insert = `INSERT INTO Chats(Name, Owner)
                   VALUES ($1,$2)
                   RETURNING ChatId`;
         let values = [request.body.name, request.decoded.memberid];
         pool.query(insert, values)
+            .then((result) => {
+                request.chatid = result.rows[0].chatid;
+                next();
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: err,
+                });
+            });
+    },
+    (request, response, next) => {
+        let query = "SELECT * FROM MEMBERS WHERE EMAIL = $1";
+        let values = ["group8tcss450@gmail.com"];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 0) {
+                    response.status(400).send({
+                        message: "SlapChat does not exist",
+                    });
+                } else {
+                    request.slapchatid = result.rows[0].memberid;
+                    next();
+                }
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error 22",
+                    error: err,
+                });
+            });
+    },
+    (request, response) => {
+        console.log(request.slapchatid);
+        console.log(request.chatID);
+        console.log(request.chatId);
+        console.log(request.chatid);
+        let query =
+            "INSERT INTO MESSAGES (CHATID, MESSAGE, MEMBERID) VALUES ($1,'Welcome to the chat!',$2) RETURNING *";
+        let values = [request.chatid, request.slapchatid];
+        pool.query(query, values)
             .then((result) => {
                 response.send({
                     success: true,
@@ -77,7 +118,7 @@ router.post(
             })
             .catch((err) => {
                 response.status(400).send({
-                    message: "SQL Error",
+                    message: "SQL Error 11",
                     error: err,
                 });
             });

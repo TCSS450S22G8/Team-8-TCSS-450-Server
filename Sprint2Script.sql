@@ -34,6 +34,13 @@ WHERE MemberId IN
 DELETE FROM Members 
 WHERE Email='shilnara@test.com';
 
+--Remove the user SlapChat
+DELETE FROM Credentials 
+WHERE MemberId IN 
+    (SELECT MemberID FROM Members WHERE Email='group8tcss450@gmail.com');
+DELETE FROM Members 
+WHERE Email='group8tcss450@gmail.com';
+
 -- --Remove the user charles
 -- DELETE FROM Credentials 
 -- WHERE MemberId IN 
@@ -51,7 +58,8 @@ VALUES
     ('Rin', 'Pham', 'Rins', 'rin@test.com', 1),
     ('Shilnara', 'Dam', 'Shilnaras', 'shilnara@test.com', 1),
     ('JenHo', 'Liao', 'JenHos', 'jenho@test.com', 1),
-    ('Levi', 'McCoy', 'Levis', 'levi@test.com', 1);
+    ('Levi', 'McCoy', 'Levis', 'levi@test.com', 1),
+    ('Slap', 'Chat', 'SlapChat', 'group8tcss450@test.com', 1);
     -- ('Charles', 'Bryan', 'Charles', 'charles@test.com', 1)
 
 
@@ -73,6 +81,9 @@ VALUES
        'd7d9409593bf2d71bfa46c729d012557beb4545d54e4b2e8d5814aa22c7fc871'),
 ((SELECT MemberId FROM Members WHERE Members.Email = 'rin@test.com'),
        '280d79b3e689f56d4ed6e1ee7938116d62b7746e5cede2b3393a805246f2bf27',
+       'd7d9409593bf2d71bfa46c729d012557beb4545d54e4b2e8d5814aa22c7fc871'),
+((SELECT MemberId FROM Members WHERE Members.Email = 'group8tcss450@test.com'),
+       '280d79b3e689f56d4ed6e1ee7938116d62b7746e5cede2b3393a805246f2bf27',
        'd7d9409593bf2d71bfa46c729d012557beb4545d54e4b2e8d5814aa22c7fc871');
 -- ((SELECT MemberId FROM Members WHERE Members.Email = 'charles@test.com')
 --        '280d79b3e689f56d4ed6e1ee7938116d62b7746e5cede2b3393a805246f2bf27'
@@ -86,7 +97,14 @@ INSERT INTO
 VALUES
     (99, 1, 1,'Gaming'),
     (100, 2, 1, 'Studying'),
-    (101, 3, 1, 'Coding Questions');
+    (101, 3, 1, 'Coding Questions'),
+    (102, 4, 1,'Movies'),
+    (103, 5, 1, 'Charles Smack Talk'),
+    (104, 1, 1, 'Books'),
+    (105, 2, 1,'PC Building'),
+    (106, 3, 1, 'Hiking'),
+    (107, 4, 1, 'Job Search'),
+    (108, 5, 1, 'AMA');
 
 
 
@@ -126,4 +144,88 @@ WHERE Members.Email = 'sean@test.com'
     OR Members.Email = 'jenho@test.com'
     OR Members.Email = 'levi@test.com';
     -- OR Members.Email = 'charles@test.com';
+
+--Add users to the chat 4 movies
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 102, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+
+
+
+--Add users to the chat 5 charles smack talk
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 103, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+
+
+--Add users to the chat 6 books
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 104, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+
+
+--Add users to the chat 7 pc building
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 105, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+
+
+--Add users to the chat 8 hiking
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 106, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+
+
+--Add users to the chat 9 job search
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 107, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+
+
+--Add users to the chat 10 ama
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 108, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
 
