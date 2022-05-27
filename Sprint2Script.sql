@@ -59,7 +59,7 @@ VALUES
     ('Shilnara', 'Dam', 'Shilnaras', 'shilnara@test.com', 1),
     ('JenHo', 'Liao', 'JenHos', 'jenho@test.com', 1),
     ('Levi', 'McCoy', 'Levis', 'levi@test.com', 1),
-    ('Slap', 'Chat', 'SlapChat', 'group8tcss450@test.com', 1);
+    ('Slap', 'Chat', 'SlapChat', 'group8tcss450@gmail.com', 1);
     -- ('Charles', 'Bryan', 'Charles', 'charles@test.com', 1)
 
 
@@ -82,7 +82,7 @@ VALUES
 ((SELECT MemberId FROM Members WHERE Members.Email = 'rin@test.com'),
        '280d79b3e689f56d4ed6e1ee7938116d62b7746e5cede2b3393a805246f2bf27',
        'd7d9409593bf2d71bfa46c729d012557beb4545d54e4b2e8d5814aa22c7fc871'),
-((SELECT MemberId FROM Members WHERE Members.Email = 'group8tcss450@test.com'),
+((SELECT MemberId FROM Members WHERE Members.Email = 'group8tcss450@gmail.com'),
        '280d79b3e689f56d4ed6e1ee7938116d62b7746e5cede2b3393a805246f2bf27',
        'd7d9409593bf2d71bfa46c729d012557beb4545d54e4b2e8d5814aa22c7fc871');
 -- ((SELECT MemberId FROM Members WHERE Members.Email = 'charles@test.com')
