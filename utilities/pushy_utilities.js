@@ -45,6 +45,24 @@ function sendFriendRequest(token, requestee) {
     });
 }
 
+//use to send accept request notification
+function acceptFriendRequest(token, responder) {
+    var data = {
+        type: "acceptFriendRequest",
+        message: responder + " accepted your friend request.",
+    };
+
+    pushyAPI.sendPushNotification(data, token, {}, function (err, id) {
+        // Log errors to console
+        if (err) {
+            return console.log("Fatal Error", err);
+        }
+
+        // Log Success
+        console.log("Push sent successfully! (ID: " + id + ")");
+    });
+}
+
 //use to delete friend
 function deleteFriend(token, deleter) {
     var data = {
@@ -85,6 +103,7 @@ function addUserToChat(token, adder) {
 module.exports = {
     sendMessageToIndividual,
     sendFriendRequest,
+    acceptFriendRequest,
     deleteFriend,
     addUserToChat,
 };
