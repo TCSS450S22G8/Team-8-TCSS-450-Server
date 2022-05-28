@@ -933,7 +933,7 @@ router.get(
         //insert welcome message into private chat
         let query =
             "INSERT INTO MESSAGES (CHATID, MESSAGE, MEMBERID) VALUES ($1,'Welcome to the private chat!',$2) RETURNING *";
-        let values = [request.chatid, request.slapchatid];
+        let values = [request.chatId, request.slapchatid];
         pool.query(query, values)
             .then((result) => {
                 next();
