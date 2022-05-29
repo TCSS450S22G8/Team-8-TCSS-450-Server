@@ -1,8 +1,8 @@
 /**
- * Enpoint for location validation.
+ * Enpoint for location adding and deleting.
  *
  * @author Shilnara Dam
- * @version 5/13/22
+ * @version 5/28/22
  */
 
 //express is the framework we're going to use to handle requests
