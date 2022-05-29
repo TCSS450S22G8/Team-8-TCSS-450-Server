@@ -13,6 +13,7 @@
         "chats",
         "forgot password",
         "messages",
-        "pushy register"
+        "pushy register",
+        "location"
     ]
 }

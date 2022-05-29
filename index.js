@@ -31,6 +31,8 @@ app.use("/change-password", require("./routes/changePassword.js"));
 
 app.use("/weather", require("./routes/weather.js"));
 
+app.use("/location", require("./routes/location.js"));
+
 app.use("/contacts", require("./routes/contacts.js"));
 
 app.use("/messages", require("./routes/messages.js"));
