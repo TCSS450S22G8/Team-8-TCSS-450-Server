@@ -104,7 +104,6 @@ router.post("/add/:lat/:lon", middleware.checkToken,
                     message: "Invalid latitude or longitude",
                 });
             } else {
-                console.log("4");
                 var result = JSON.parse(body);
                 if (result.length >= 1) {
                     req.city = result[0].name + ", " + result[0].country;    
@@ -212,5 +211,71 @@ router.delete("/delete/:lat/:lon", middleware.checkToken,
         });
     }
 )
+
+/**
+ * @api {get} /location/ Request to get all user saved locations
+ * @apiName GetLocation
+ * @apiGroup Location
+ *
+ * @apiHeader {String} jwt jwt of the user
+ *
+ * @apiSuccess (Success 200) {json} locations array of json objects
+ *
+ * @apiSuccessExample {json} Success-Response: 
+ *      {
+ *          "locations" : [
+ *              {
+ *                  "nickname": "Tacoma, US",
+ *                  "lat": "47.2113"
+ *                  "lon": "-122.439874"
+ *              },
+ *              .
+ *              .
+ *              .
+ *          ]
+ *      }
+ *
+ * @apiError (400: Invalid memberid) {String} message "User does not exist"
+ * 
+ * @apiError (500: SQL ERROR) {json} message "SQL ERROR"
+ */
+router.get("/", middleware.checkToken, 
+    (req, res, next) => {
+        //check if user exist
+        let query = "SELECT * FROM MEMBERS WHERE MEMBERID = $1"
+        let values = [req.decoded.memberid]
+        pool.query(query, values)
+            .then(result => {
+                if (result.rowCount == 1) {
+                    next()
+                } else {
+                    res.status(400).send({
+                        message: "User does not exist",
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message: "SQL Error" + "\n" + err,
+                });
+            });
+    },
+    (req, res, next) => {
+        let query = "SELECT NICKNAME, LAT, LONG FROM LOCATIONS WHERE MEMBERID = $1"
+        let values = [req.decoded.memberid]
+        pool.query(query, values)
+            .then(result => {
+                res.status(200).send({
+                    locations: result.rows
+                });
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message: "SQL Error" + "\n" + err,
+                });
+            });
+    }
+
+);
 
 module.exports = router;
