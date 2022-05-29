@@ -227,7 +227,7 @@ router.delete("/delete/:lat/:lon", middleware.checkToken,
  *              {
  *                  "nickname": "Tacoma, US",
  *                  "lat": "47.2113"
- *                  "lon": "-122.439874"
+ *                  "long": "-122.439874"
  *              },
  *              .
  *              .
