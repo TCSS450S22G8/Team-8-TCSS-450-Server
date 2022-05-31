@@ -43,6 +43,8 @@ app.use("/forgot-password", require("./routes/forgotPassword.js"));
 
 app.use("/pushy", middleware.checkToken, require("./routes/pushyregister.js"));
 
+app.use("/user-info", require("./routes/userinfo.js"));
+
 /*
  * Return HTML for the / end point.
  * This is a nice location to document your web service API
