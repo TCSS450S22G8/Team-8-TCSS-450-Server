@@ -78,25 +78,6 @@ router.post("/:email", (request, response) => {
                 // This would be the text of email body
                 text: `Hi! To reset your password please follow the link https://tcss-450-sp22-group-8.herokuapp.com/forgot-password/${token}`,
             };
-            // transporter.sendMail(mailConfigurations, function (error, info) {
-            //     if (error) {
-            //         console.log(error);
-            //         response.status(401).send({
-            //             message:
-            //                 "Error sending email, possible incorrect email" +
-            //                 error,
-            //         });
-            //         console.log(error);
-            //     } else {
-            //         //We successfully sent the email to the user!
-            //         response.status(201).send({
-            //             success: true,
-            //             email: email,
-            //         });
-            //         console.log("Email Sent Successfully");
-            //         console.log(info);
-            //     }
-            // });
             sendEmail(mailConfigurations);
             //We successfully sent the email to the user!
             response.status(201).send({
