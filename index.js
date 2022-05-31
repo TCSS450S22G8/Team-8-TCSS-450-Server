@@ -43,7 +43,7 @@ app.use("/forgot-password", require("./routes/forgotPassword.js"));
 
 app.use("/pushy", middleware.checkToken, require("./routes/pushyregister.js"));
 
-app.use("/user-info", require("./routes/userinfo.js"));
+app.use("/user-info", require("./routes/userInfo.js"));
 
 /*
  * Return HTML for the / end point.
