@@ -689,7 +689,7 @@ router.delete(
 );
 
 /**
- * @api {get} /chats Request to get all chats the user is in
+ * @api {get} /chats Request to get all chats the user is in and the email of the owner
  * @apiName GetChats
  * @apiGroup Chats
  *
@@ -722,7 +722,7 @@ router.get(
     },
     (request, response) => {
         let query =
-            "SELECT CHATS.NAME, CHATS.CHATID FROM CHATMEMBERS INNER JOIN CHATS ON CHATMEMBERS.CHATID = CHATS.CHATID WHERE MEMBERID = $1";
+            "SELECT CHATS.NAME, CHATS.CHATID, MEMBERS.EMAIL AS OWNER FROM CHATMEMBERS INNER JOIN CHATS ON CHATMEMBERS.CHATID = CHATS.CHATID INNER JOIN MEMBERS ON MEMBERS.MEMBERID = CHATS.OWNER WHERE CHATMEMBERS.MEMBERID = $1";
         let values = [request.decoded.memberid];
         pool.query(query, values)
             .then((result) => {
