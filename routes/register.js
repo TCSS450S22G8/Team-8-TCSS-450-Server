@@ -141,7 +141,7 @@ router.post(
                         memberid: request.memberid,
                     },
                     process.env.JSON_WEB_TOKEN,
-                    { expiresIn: "10m" }
+                    { expiresIn: "14400m" }
                 );
                 const mailConfigurations = {
                     // It should be a string of sender/server email

@@ -27,26 +27,6 @@ router.get("/:token", (req, res) => {
     jwt.verify(token, process.env.JSON_WEB_TOKEN, function (err, decoded) {
         if (err) {
             console.log(err);
-            const token = jwt.sign(
-                {
-                    memberid: request.memberid,
-                },
-                process.env.JSON_WEB_TOKEN,
-                { expiresIn: "10m" }
-            );
-            const mailConfigurations = {
-                // It should be a string of sender/server email
-                from: process.env.EMAIL,
-
-                to: request.body.email,
-
-                // Subject of Email
-                subject: "Email Verification",
-
-                // This would be the text of email body
-                text: `Hi! To register please follow the link https://tcss-450-sp22-group-8.herokuapp.com/verify/${token}`,
-            };
-            sendEmail(mailConfigurations);
             res.send(
                 "Email verification failed, possibly the link is invalid or expired. New verification email has been sent to you!"
             );
