@@ -288,7 +288,7 @@ router.get("/retrieve/", middleware.checkToken, (request, response) => {
     let query =
         "SELECT MEMBERS.EMAIL, MEMBERS.USERNAME FROM (SELECT MEMBERID_B FROM " +
         "CONTACTS WHERE MEMBERID_A = $1 AND VERIFIED = 1) AS B JOIN MEMBERS ON " +
-        "B.MEMBERID_B = MEMBERS.MEMBERID";
+        "B.MEMBERID_B = MEMBERS.MEMBERID ORDER BY MEMBERS.USERNAME ASC";
     let values = [memberid];
 
     pool.query(query, values)
@@ -583,7 +583,7 @@ router.get(
     },
     (request, response) => {
         let query =
-            "SELECT MEMBERS.USERNAME, MEMBERS.EMAIL FROM MEMBERS WHERE MEMBERID NOT IN (SELECT MEMBERID_B FROM CONTACTS WHERE MEMBERID_A = $1 AND VERIFIED = 1) AND MEMBERID != $1";
+            "SELECT MEMBERS.USERNAME, MEMBERS.EMAIL FROM MEMBERS WHERE MEMBERID NOT IN (SELECT MEMBERID_B FROM CONTACTS WHERE MEMBERID_A = $1 AND VERIFIED = 1) AND MEMBERID != $1 ORDER BY MEMBERS.USERNAME ASC";
         let values = [request.decoded.memberid];
         pool.query(query, values)
             .then((result) => {
