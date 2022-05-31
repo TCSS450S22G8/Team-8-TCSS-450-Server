@@ -762,11 +762,11 @@ router.get(
  * @apiError (500: SQL Error) {String} message the reported SQL error details
  *
  * @apiError (400: Unknown Friend) {String} message "Friend/email does not exist"
- * 
+ *
  * @apiError (400: SlapChat Error) {String} message "SlapChat does not exist"
  *
  * @apiError (400: SlapChat Message Error) {String} message "SQL Error on inserting slapchat message"
- * 
+ *
  * @apiUse JSONError
  */
 router.get(
@@ -792,7 +792,7 @@ router.get(
         pool.query(query, values)
             .then((result) => {
                 if (result.rowCount > 0) {
-                    request.username = result.rows[0].username
+                    request.username = result.rows[0].username;
                     next();
                 } else {
                     response.status(400).send({
@@ -906,7 +906,7 @@ router.get(
                     error: error,
                 });
             });
-    }, 
+    },
     (request, response, next) => {
         //gets slapchat's memberid to add new message to chatroom
         let query = "SELECT * FROM MEMBERS WHERE EMAIL = $1";
@@ -944,14 +944,14 @@ router.get(
                     error: err,
                 });
             });
-    }, 
+    },
     (request, response) => {
         //send push notification to friend that new private chat was created
         let query = "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
         let values = [request.friendMemberid];
         pool.query(query, values)
             .then((results) => {
-                request.chatname = "a private chat!"
+                request.chatname = "a private chat!";
                 results.rows.forEach((entry) => {
                     chat_funtions.addUserToChat(entry.token, request);
                 });
@@ -971,7 +971,7 @@ router.get(
 );
 
 /**
- * @api {get} /chats/:chatId? Request to get the emails of user in a chat
+ * @api {get} /chats/:chatId? Request to get the emails and username of users in a chat
  * @apiName GetEmailOfUsersInChat
  * @apiGroup Chats
  *
@@ -982,6 +982,7 @@ router.get(
  * @apiSuccess {Number} rowCount the number of messages returned
  * @apiSuccess {Object[]} members List of members in the chat
  * @apiSuccess {String} messages.email The email for the member in the chat
+ * @apiSuccess {String} messages.username The username for the members in the chat
  *
  * @apiError (404: ChatId Not Found) {String} message "Chat ID Not Found"
  * @apiError (400: Invalid Parameter) {String} message "Malformed parameter. chatId must be a number"
@@ -1032,7 +1033,7 @@ router.get(
     },
     (request, response) => {
         //Retrieve the members
-        let query = `SELECT Members.Email 
+        let query = `SELECT Members.Email, Members.Username 
                     FROM ChatMembers
                     INNER JOIN Members ON ChatMembers.MemberId=Members.MemberId
                     WHERE ChatId=$1`;
