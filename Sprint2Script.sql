@@ -95,6 +95,7 @@ VALUES
 INSERT INTO
     Chats(ChatId, Owner, GroupChat, Name)
 VALUES
+    (1000, 1, 1, 'Global Chat'),
     (99, 1, 1,'Gaming'),
     (100, 2, 1, 'Studying'),
     (101, 3, 1, 'Coding Questions'),
@@ -106,7 +107,17 @@ VALUES
     (107, 4, 1, 'Job Search'),
     (108, 5, 1, 'AMA');
 
-
+--Add users to the chat 1 GLOBAL
+INSERT INTO
+    ChatMembers(ChatId, MemberID)
+SELECT 1000, Members.MemberId
+FROM Members
+WHERE Members.Email = 'sean@test.com'
+    OR Members.Email = 'rin@test.com'
+    OR Members.Email = 'shilnara@test.com'
+    OR Members.Email = 'jenho@test.com'
+    OR Members.Email = 'levi@test.com';
+    -- OR Members.Email = 'charles@test.com';
 
 
 --Add users to the chat 1 gaming
@@ -232,6 +243,10 @@ WHERE Members.Email = 'sean@test.com'
 
 
 --ADD INITIAL MESSAGE TO EACH CHAT
+INSERT INTO 
+    MESSAGES (CHATID, MESSAGE, MEMBERID) 
+VALUES (1000,'Welcome to the chat!',6) RETURNING *;
+
 INSERT INTO 
     MESSAGES (CHATID, MESSAGE, MEMBERID) 
 VALUES (99,'Welcome to the chat!',6) RETURNING *;

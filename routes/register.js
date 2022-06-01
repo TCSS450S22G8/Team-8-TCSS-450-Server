@@ -179,7 +179,7 @@ router.post(
     },
     (request, response) => {
         let query =
-            "INSERT INTO CHATMEMBERS (CHATID, MEMBERID) SELECT 1, MEMBERS.MEMBERID FROM MEMBERS WHERE MEMBERS.EMAIL = $1";
+            "INSERT INTO CHATMEMBERS (CHATID, MEMBERID) SELECT 1000, MEMBERS.MEMBERID FROM MEMBERS WHERE MEMBERS.EMAIL = $1";
         let values = [memberEmail];
         pool.query(query, values)
             .then((result) => {
