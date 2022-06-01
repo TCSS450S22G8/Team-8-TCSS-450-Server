@@ -150,7 +150,7 @@ router.get("/zipcode/:zipcode", (req, res) => {
     request(zipCodeUrl, function (error, response, body) {
         if (error) {
             res.status(400).send({
-                message: "Invalid Zipcode 1 " + zipcode,
+                message: "Invalid Zipcode Entered: " + zipcode,
             });
             return;
         } else {
@@ -159,7 +159,12 @@ router.get("/zipcode/:zipcode", (req, res) => {
             //check if user has inputted a valid zipcode. .cod since thats what the api has it called.
             if (result.cod == 404) {
                 res.status(400).send({
-                    message: "Invalid Zipcode 2 " + zipcode,
+                    message: "Invalid Zipcode Entered: " + zipcode,
+                });
+                return;
+            } else if (result.cod == 400) {
+                res.status(400).send({
+                    message: "Invalid Zipcode Entered: " + zipcode,
                 });
                 return;
             }
@@ -171,7 +176,7 @@ router.get("/zipcode/:zipcode", (req, res) => {
             request(weatherUrl, function (error, response, body) {
                 if (error) {
                     res.status(400).send({
-                        message: "Invalid Zipcode 3 " + zipcode,
+                        message: "Invalid Zipcode Entered: " + zipcode,
                     });
                     return;
                 } else {
