@@ -252,7 +252,7 @@ router.get(
             request.params.messageId = 2 ** 31 - 1;
         }
 
-        let query = `SELECT Messages.PrimaryKey AS messageId, Members.Email, Messages.Message, 
+        let query = `SELECT Messages.PrimaryKey AS messageId, Members.Email, Members.Username, Messages.Message, 
                     to_char(Messages.Timestamp AT TIME ZONE 'PDT', 'YYYY-MM-DD HH24:MI:SS.US' ) AS Timestamp
                     FROM Messages
                     INNER JOIN Members ON Messages.MemberId=Members.MemberId
