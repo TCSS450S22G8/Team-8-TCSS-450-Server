@@ -125,7 +125,7 @@ router.post(
             });
         }
     },
-    (request, response) => {
+    (request, response, next) => {
         //We're storing salted hashes to make our application more secure
         //If you're interested as to what that is, and why we should use it
         //watch this youtube video: https://www.youtube.com/watch?v=8ZtInClXe1Q
@@ -136,6 +136,7 @@ router.post(
         let values = [request.memberid, salted_hash, salt];
         pool.query(theQuery, values)
             .then((result) => {
+                memberEmail = request.body.email;
                 const token = jwt.sign(
                     {
                         memberid: request.memberid,
@@ -156,10 +157,7 @@ router.post(
                     text: `Hi! To register please follow the link https://tcss-450-sp22-group-8.herokuapp.com/verify/${token}`,
                 };
                 sendEmail(mailConfigurations);
-                response.status(200).send({
-                    message: "Email for account verification succesfully sent!",
-                });
-                return;
+                next();
             })
             .catch((error) => {
                 //log the error for debugging
@@ -176,6 +174,29 @@ router.post(
                 response.status(400).send({
                     message: "other error, see detail",
                     detail: error.detail,
+                });
+            });
+    },
+    (request, response) => {
+        let query =
+            "INSERT INTO CHATMEMBERS (CHATID, MEMBERID) SELECT 1, MEMBERS.MEMBERID FROM MEMBERS WHERE MEMBERS.EMAIL = $1";
+        let values = [memberEmail];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    response.status(200).send({
+                        message:
+                            "Email for account verification succesfully sent! You have been added to a global chat!",
+                    });
+                } else {
+                    response.status(400).send({
+                        message: "Could not add user to global chat.",
+                    });
+                }
+            })
+            .catch((err) => {
+                response.status(500).send({
+                    message: "Database Failed",
                 });
             });
     }
