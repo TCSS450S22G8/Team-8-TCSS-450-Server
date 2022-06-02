@@ -483,6 +483,7 @@ router.put(
  */
 router.delete(
     "/delete/user/:chatId/:email",
+    middleware.checkToken,
     (request, response, next) => {
         //validate on empty parameters
         if (!request.params.chatId || !request.params.email) {
@@ -509,6 +510,7 @@ router.delete(
                         message: "Chat ID not found",
                     });
                 } else {
+                    request.chatname = result.rows[0].name;
                     next();
                 }
             })
@@ -520,10 +522,54 @@ router.delete(
             });
     },
     (request, response, next) => {
-        //validate email exists AND convert it to the associated memberId
+        // Check if deleter exists
+        let query = "SELECT * FROM MEMBERS WHERE MEMBERID = $1";
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    request.deleterUsername = result.rows[0].username;
+                    next();
+                } else {
+                    response.status(400).send({
+                        message:
+                            "User attempting to delete person from chat does not exist",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "Database Error",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        // checks if deleter is in the chatroom
+        let query =
+            "SELECT * FROM CHATMEMBERS WHERE MEMBERID=$1 AND CHATID = $2";
+        let values = [request.decoded.memberid, request.params.chatId];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "You cannot delete from this chatroom",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        //validate email of person being deleted exists
         let query = "SELECT MemberID FROM Members WHERE Email=$1";
         let values = [request.params.email];
-
         pool.query(query, values)
             .then((result) => {
                 if (result.rowCount == 0) {
@@ -531,7 +577,7 @@ router.delete(
                         message: "email not found",
                     });
                 } else {
-                    request.params.email = result.rows[0].memberid;
+                    request.params.memberid = result.rows[0].memberid;
                     next();
                 }
             })
@@ -545,8 +591,7 @@ router.delete(
     (request, response, next) => {
         //validate email exists in the chat
         let query = "SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2";
-        let values = [request.params.chatId, request.params.email];
-
+        let values = [request.params.chatId, request.params.memberid];
         pool.query(query, values)
             .then((result) => {
                 if (result.rowCount > 0) {
@@ -564,17 +609,35 @@ router.delete(
                 });
             });
     },
-    (request, response) => {
+    (request, response, next) => {
         //Delete the memberId from the chat
         let insert = `DELETE FROM ChatMembers
                   WHERE ChatId=$1
                   AND MemberId=$2
                   RETURNING *`;
-        let values = [request.params.chatId, request.params.email];
+        let values = [request.params.chatId, request.params.memberid];
         pool.query(insert, values)
-            .then((result) => {
-                response.send({
-                    success: true,
+            .then(() => {
+                next();
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: err,
+                });
+            });
+    },
+    (request, response) => {
+        // send push notification to user affected by being deleted from the chat
+        let query = "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
+        let values = [request.params.memberid];
+        pool.query(query, values)
+            .then((results) => {
+                results.rows.forEach((entry) => {
+                    chat_funtions.deleteUserFromChat(entry.token, request);
+                });
+                response.status(200).send({
+                    message: "Successfully deleted your friend from the chat!",
                 });
             })
             .catch((err) => {
@@ -591,7 +654,7 @@ router.delete(
  * @apiName DeleteChatRoom
  * @apiGroup Chats
  *
- * @apiDescription Deletes the chat room if the user owns it and it is a group chat.
+ * @apiDescription Deletes the chat room if the user owns it and it is a group chat. ACTUALLY DOES NOT CHECK FOR OWNER
  *
  * @apiParam {Number} chatId the chat to delete the user from
  *

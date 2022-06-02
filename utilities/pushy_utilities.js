@@ -102,10 +102,31 @@ function addUserToChat(token, adder) {
     });
 }
 
+//deleted from a chat
+function deleteUserFromChat(token, deleter) {
+    var data = {
+        type: "deleteUserFromChat",
+        message:
+            deleter.deleterUsername + " deleted you from " + deleter.chatname,
+        chatid: deleter.params.chatId,
+    };
+
+    pushyAPI.sendPushNotification(data, token, {}, function (err, id) {
+        // Log errors to console
+        if (err) {
+            return console.log("Fatal Error", err);
+        }
+
+        // Log Success
+        console.log("Push sent successfully! (ID: " + id + ")");
+    });
+}
+
 module.exports = {
     sendMessageToIndividual,
     sendFriendRequest,
     acceptFriendRequest,
     deleteFriend,
     addUserToChat,
+    deleteUserFromChat,
 };
