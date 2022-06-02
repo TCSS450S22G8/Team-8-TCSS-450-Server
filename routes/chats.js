@@ -1034,6 +1034,128 @@ router.get(
 );
 
 /**
+ * @api {get} /chats/not-in-chat/:chatId" Request to get the emails and username of friends not in a specific chat
+ * @apiName GetFriendsNotInChat
+ * @apiGroup Chats
+ *
+ * @apiHeader {String} authorization Valid JSON Web Token JWT
+ *
+ * @apiParam {Number} chatId the chat to look up.
+ *
+ * @apiSuccess {json} Object containing an array of JSON Objects
+ *
+ * @apiSuccessExample {json} Success-response:
+ *
+ *           {
+ *               "rowCount": 1,
+ *               "rows": [
+ *                   {
+ *                       "username": "test_username",
+ *                       "email": "test@email.com"
+ *                   }, ...
+ *               ]
+ *           }
+ *
+ * @apiError (400: ChatId Not Found) {String} message "Chat ID Not Found"
+ * @apiError (400: SQL Error) {String} message "SQL Error"
+ * @apiError (400: User Does Not Exist) {String} message "User does not exist"
+ * @apiError (400: You are not in this chatroom) {String} message "You are not in this chatroom"
+ *
+ * @apiUse JSONError
+ */
+router.get(
+    "/not-in-chat/:chatId",
+    middleware.checkToken,
+    (request, response, next) => {
+        //validate chat id exists
+        let query = "SELECT * FROM CHATS WHERE ChatId=$1";
+        let values = [request.params.chatId];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 0) {
+                    response.status(400).send({
+                        message: "Chat ID not found",
+                    });
+                } else {
+                    next();
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
+                });
+            });
+    },
+    // confirm user exists
+    (request, response, next) => {
+        let query = "SELECT * FROM MEMBERS WHERE MEMBERID = $1";
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                console.log(request.decoded.memberid);
+                if (result.rowCount == 1) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "User does not exist",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
+                });
+            });
+    },
+    (request, response, next) => {
+        // checks if user is in the chatroom
+        let query =
+            "SELECT * FROM CHATMEMBERS WHERE MEMBERID=$1 AND CHATID = $2";
+        let values = [request.decoded.memberid, request.params.chatId];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "You are not in this chatroom",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
+                });
+            });
+    },
+    // Get friends that are not in the specified chat
+    (request, response) => {
+        let query =
+            "SELECT A.USERNAME, A.EMAIL FROM (SELECT MEMBERS.MEMBERID, MEMBERS.USERNAME AS USERNAME, " +
+            "MEMBERS.EMAIL AS EMAIL FROM MEMBERS JOIN CONTACTS ON MEMBERS.MEMBERID = CONTACTS.MEMBERID_B " +
+            "WHERE MEMBERID_A = $1 AND VERIFIED = 1) AS A WHERE MEMBERID NOT IN (SELECT MEMBERS.MEMBERID " +
+            "FROM MEMBERS JOIN CHATMEMBERS ON MEMBERS.MEMBERID = CHATMEMBERS.MEMBERID WHERE CHATID = $2)";
+        let values = [request.decoded.memberid, request.params.chatId];
+        pool.query(query, values)
+            .then((result) => {
+                response.status(200).send({
+                    rowCount: result.rowCount,
+                    rows: result.rows,
+                });
+            })
+            .catch((error) => {
+                response.status(400).send({
+                    message: "SQL Error",
+                    error: error,
+                });
+            });
+    }
+);
+
+/**
  * @api {get} /chats/:chatId? Request to get the emails and username of users in a chat
  * @apiName GetEmailOfUsersInChat
  * @apiGroup Chats
