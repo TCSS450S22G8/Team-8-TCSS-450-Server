@@ -12,6 +12,7 @@ function sendMessageToIndividual(token, message) {
         message: message,
         chatid: message.chatid,
     };
+    console.log(data.chatid);
 
     // Send push notification via the Send Notifications API
     // https://pushy.me/docs/api/send-notifications
@@ -87,6 +88,7 @@ function addUserToChat(token, adder) {
     var data = {
         type: "addedUserToChat",
         message: adder.username + " added you to " + adder.chatname,
+        chatid: adder.params.chatId,
     };
 
     pushyAPI.sendPushNotification(data, token, {}, function (err, id) {
