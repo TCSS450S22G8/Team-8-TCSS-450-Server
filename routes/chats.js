@@ -64,8 +64,8 @@ router.post(
         }
     },
     (request, response, next) => {
-        let insert = `INSERT INTO Chats(Name, Owner)
-                  VALUES ($1,$2)
+        let insert = `INSERT INTO Chats(Name, Owner, GroupChat)
+                  VALUES ($1,$2, 1)
                   RETURNING ChatId`;
         let values = [request.body.name, request.decoded.memberid];
         pool.query(insert, values)
