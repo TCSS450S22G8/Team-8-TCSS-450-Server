@@ -719,7 +719,11 @@ router.get(
         let values = [request.decoded.memberid];
         pool.query(query, values)
             .then((result) => {
-                response.status(200).send(result.rows);
+                response.status(200).send({
+                    message:
+                        "Successfully retrieved all members you are not friends with.",
+                    members: result.rows,
+                });
             })
             .catch((err) => {
                 response.status(500).send({
