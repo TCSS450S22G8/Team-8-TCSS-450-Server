@@ -82,7 +82,7 @@ VALUES
 INSERT INTO
     Chats(ChatId, Owner, GroupChat, Name)
 VALUES
-    (1000, 1, 1, 'Global Chat');
+    (1000, 6, 1, 'Global Chat');
 
 --Add users to the chat 1000 GLOBAL
 INSERT INTO

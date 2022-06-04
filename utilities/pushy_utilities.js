@@ -122,6 +122,23 @@ function deleteUserFromChat(token, deleter) {
     });
 }
 
+//deleted from a chat
+function deleteAccount(token) {
+    var data = {
+        type: "deleteAccount",
+    };
+
+    pushyAPI.sendPushNotification(data, token, {}, function (err, id) {
+        // Log errors to console
+        if (err) {
+            return console.log("Fatal Error", err);
+        }
+
+        // Log Success
+        console.log("Push sent successfully! (ID: " + id + ")");
+    });
+}
+
 module.exports = {
     sendMessageToIndividual,
     sendFriendRequest,
@@ -129,4 +146,5 @@ module.exports = {
     deleteFriend,
     addUserToChat,
     deleteUserFromChat,
+    deleteAccount,
 };

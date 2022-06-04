@@ -19,6 +19,8 @@ const middleware = require("../middleware");
 
 const router = express.Router();
 
+const msg_functions = require("../utilities/exports").messaging;
+
 /**
  * @api {delete} /delete Allows user to delete account
  * @apiName DeleteAccount
@@ -54,6 +56,24 @@ router.delete(
             .catch((err) => {
                 response.status(500).send({
                     message: "Database Query Failed",
+                });
+            });
+    },
+    (request, response, next) => {
+        // send a notification of this message to ALL members with registered tokens
+        let query = `SELECT token FROM Push_Token WHERE MemberId=$1`;
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                result.rows.forEach((entry) =>
+                    msg_functions.deleteAccount(entry.token)
+                );
+                next();
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error on select from push token",
+                    error: err,
                 });
             });
     },
