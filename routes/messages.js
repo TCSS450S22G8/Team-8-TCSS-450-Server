@@ -96,12 +96,16 @@ router.post(
     },
     (request, response, next) => {
         //validate memberid exists in the chat
-        let query = "SELECT * FROM ChatMembers WHERE ChatId=$1 AND MemberId=$2";
+        console.log("before query");
+        let query =
+            "SELECT * FROM CHATMEMBERS JOIN MEMBERS ON CHATMEMBERS.MEMBERID = MEMBERS.MEMBERID WHERE CHATID = $1 AND CHATMEMBERS.MEMBERID = $2";
+        console.log(request.body.chatId, request.decoded.memberid);
         let values = [request.body.chatId, request.decoded.memberid];
 
         pool.query(query, values)
             .then((result) => {
                 if (result.rowCount > 0) {
+                    request.username = result.rows[0].username;
                     next();
                 } else {
                     response.status(400).send({
@@ -132,6 +136,7 @@ router.post(
                     //insertion success. Attach the message to the Response obj
                     response.message = result.rows[0];
                     response.message.email = request.decoded.email;
+                    response.message.username = request.username;
                     //Pass on to next to push
                     next();
                 } else {
