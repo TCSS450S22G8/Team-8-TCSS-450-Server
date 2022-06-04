@@ -45,6 +45,8 @@ app.use("/pushy", middleware.checkToken, require("./routes/pushyregister.js"));
 
 app.use("/user-info", require("./routes/userInfo.js"));
 
+app.use("/delete-account", require("./routes/deleteAccount.js"));
+
 /*
  * Return HTML for the / end point.
  * This is a nice location to document your web service API
