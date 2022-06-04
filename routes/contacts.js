@@ -7,6 +7,7 @@
  */
 
 //express is the framework we're going to use to handle requests
+const { response } = require("express");
 const express = require("express");
 
 //Access the connection to Heroku Database
@@ -25,12 +26,10 @@ const router = express.Router();
  * @apiName postAddFriend
  * @apiGroup Contacts
  *
- * @apiParam {String} memberid
- * @apiParam {String} email
+ * @apiParam {JWT} the jwt of the user
  *
  * @apiParamExample {json} Request-Example:
  *           {
- *            "memberid": "1",
  *            "email": "test@test.com"
  *           }
  *
@@ -43,84 +42,133 @@ const router = express.Router();
  *         "message": "Sent Contact Request"
  *     }
  *
+ * @apiError (400: User Does Not Exist) {String} message "User Does Not Exist"
+ *
  * @apiError (400: Invalid Email) {String} message "Invalid email"
  *
- * @apiError (500: Existing Request) {String} message "Already a pending friend request."
+ * @apiError (400: Already Received Request) {String} message "You already have a friend request from this person, to add them as a friend, accept their request."
+ *
+ * @apiError (400: Existing Request) {String} message "Already sent a friend request."
+ *
+ * @apiError (400: Pushy Error) {String} message "SQL Error on select from push token"
  *
  * @apiError (500: Database Failure) {String} message "Database Query Failed"
  *
  */
-router.post("/add", middleware.checkToken, (request, response) => {
-    const sender = request.decoded.memberid;
-    const receiverEmail = request.body.email;
-    let queryEmail =
-        "SELECT MEMBERS.MEMBERID FROM MEMBERS WHERE UPPER(MEMBERS.EMAIL) = UPPER($1)";
-
-    let values = [receiverEmail];
-
-    pool.query(queryEmail, values)
-        .then((result) => {
-            if (result.rowCount == 0) {
-                response.status(400).send({
-                    message: "Invalid email",
-                });
-                return;
-            }
-            let query =
-                "INSERT INTO CONTACTS(MEMBERID_A, MEMBERID_B) VALUES($1, $2)";
-            values = [sender, result.rows[0].memberid];
-            memberid = result.rows[0].memberid;
-            pool.query(query, values)
-                .then((result) => {
-                    let query =
-                        "SELECT USERNAME, EMAIL FROM MEMBERS WHERE MEMBERID = $1";
-                    let values = [sender];
-                    pool.query(query, values)
-                        .then((result) => {
-                            let username = result.rows[0].username;
-                            // send a notification of this message to ALL members with registered tokens
-                            let query = `SELECT token FROM Push_Token
-                                        WHERE memberid=$1`;
-                            let values = [memberid];
-                            pool.query(query, values)
-                                .then((result) => {
-                                    result.rows.forEach((entry) =>
-                                        contact_functions.sendFriendRequest(
-                                            entry.token,
-                                            username
-                                        )
-                                    );
-                                    response.status(200).send({
-                                        message:
-                                            "Friend Request Sent Successfully!",
-                                    });
-                                })
-                                .catch((err) => {
-                                    response.status(400).send({
-                                        message:
-                                            "SQL Error on select from push token",
-                                        error: err,
-                                    });
-                                });
-                        })
-                        .catch((err) => {
-                            response.status(500).send({
-                                message: "Database Query Failed",
-                            });
-                        });
-                })
-                .catch((error) => {
-                    response.status(500).send({
-                        message: "Already a pending friend request.",
+router.post(
+    "/add",
+    middleware.checkToken,
+    (request, response, next) => {
+        // get username and email of the user sending the request
+        let query = "SELECT USERNAME, EMAIL FROM MEMBERS WHERE MEMBERID = $1";
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    request.username = result.rows[0].username;
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "User does not exist",
                     });
+                }
+            })
+            .catch((err) => {
+                response.status(500).send({
+                    message: "Database Query Failed",
                 });
-        })
-        .catch((error) => {
-            response.status(500).send({
-                message: "Database Query Failed",
             });
-        });
-});
+    },
+    (request, response, next) => {
+        //confirm user we are adding exists
+        let query =
+            "SELECT MEMBERS.MEMBERID FROM MEMBERS WHERE UPPER(MEMBERS.EMAIL) = UPPER($1)";
+        let values = [request.body.email];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 0) {
+                    response.status(400).send({
+                        message: "Invalid email",
+                    });
+                } else {
+                    request.receiverMemberid = result.rows[0].memberid;
+                    next();
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "Database Query Failed",
+                });
+            });
+    },
+    (request, response, next) => {
+        // checks if the person we want to send a friend request has already sent a friend request to us
+        let query =
+            "SELECT * FROM CONTACTS WHERE MEMBERID_A = $1 AND MEMBERID_B = $2 and VERIFIED = 0";
+        let values = [request.receiverMemberid, request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    response.status(400).send({
+                        message:
+                            "You already have a friend request from this person, to add them as a friend, accept their request.",
+                    });
+                } else {
+                    next();
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "Database Query Failed",
+                });
+            });
+    },
+    (request, response, next) => {
+        //update contacts to be friends
+        let query =
+            "INSERT INTO CONTACTS(MEMBERID_A, MEMBERID_B) VALUES($1, $2)";
+        values = [request.decoded.memberid, request.receiverMemberid];
+        pool.query(query, values)
+            .then((result) => {
+                if (result.rowCount == 1) {
+                    next();
+                } else {
+                    response.status(500).send({
+                        message: "Database Query Failed",
+                    });
+                }
+            })
+            .catch((error) => {
+                response.status(500).send({
+                    message: "Already sent a friend request.",
+                });
+            });
+    },
+    (request, response) => {
+        // send a notification of this message to ALL members with registered tokens
+        let query = `SELECT token FROM Push_Token
+                        WHERE memberid=$1`;
+        let values = [request.receiverMemberid];
+        pool.query(query, values)
+            .then((result) => {
+                result.rows.forEach((entry) =>
+                    contact_functions.sendFriendRequest(
+                        entry.token,
+                        request.username
+                    )
+                );
+                response.status(200).send({
+                    message: "Friend Request Sent Successfully!",
+                });
+            })
+            .catch((err) => {
+                response.status(400).send({
+                    message: "SQL Error on select from push token",
+                    error: err,
+                });
+            });
+    }
+);
 
 /**
  * @api {post} /contacts/accept Allows user to accept a friend
@@ -532,7 +580,7 @@ router.get(
 );
 
 /**
- * @api {get} /contacts/retrieve/nonfriends Request to get all members you are not friends with so you can add friends
+ * @api {get} /contacts/retrieve/non-friends Request to get all members you are not friends with so you can add friends
  * @apiName GetAllNonFriendMembers
  * @apiGroup Contacts
  *
@@ -559,7 +607,7 @@ router.get(
  *
  */
 router.get(
-    "/retrieve/nonfriends",
+    "/retrieve/non-friends",
     middleware.checkToken,
     (request, response, next) => {
         let query = "SELECT * FROM MEMBERS WHERE MEMBERID = $1";
@@ -592,6 +640,86 @@ router.get(
                         "Successfully retrieved all members you are not friends with.",
                     members: result.rows,
                 });
+            })
+            .catch((err) => {
+                response.status(500).send({
+                    message: "SQL Error" + "\n" + err,
+                });
+            });
+    }
+);
+
+/**
+ * @api {get} /contacts/retrieve/add-non-friends Request to get all members you are not friends minus members you have requests incoming/outgoing with
+ * @apiName GetAllNonFriendsMinusInc/Out
+ * @apiGroup Contacts
+ *
+ * @apiHeader {String} String jwt of the user
+ *
+ * @apiSuccess (Success 200) {json} Success Array of json objects of all members you are not friends with minus incoming/outgoing requests
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+ *      message: "successfully retrieved all members you are not friends with."
+ *      members:
+ *              [
+ *                  {
+ *                      "username": "test username"
+ *                      "email": "test@test.com"
+ *                  }
+ *                  ...
+ *              ]
+ *  }
+ *
+ * @apiError (400: Invalid memberid) {String} message "Invalid Member ID"
+ *
+ * @apiError (500: SQL Error) {String} message "SQL Error"
+ *
+ */
+router.get(
+    "/retrieve/add-non-friends",
+    middleware.checkToken,
+    (request, response, next) => {
+        let query = "SELECT * FROM MEMBERS WHERE MEMBERID = $1";
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                // confirm user exists
+                if (result.rowCount == 1) {
+                    next();
+                } else {
+                    response.status(400).send({
+                        message: "User does not exist",
+                    });
+                }
+            })
+            .catch((err) => {
+                response.status(500).send({
+                    message: "SQL Error" + "\n" + err,
+                });
+            });
+    },
+    (request, response) => {
+        let query =
+            "SELECT FRIEND.USERNAME, FRIEND.EMAIL " +
+            "FROM (SELECT MEMBERS.USERNAME as USERNAME, MEMBERS.EMAIL as EMAIL, MEMBERS.MEMBERID as MEMBERID " +
+            "FROM MEMBERS " +
+            "WHERE MEMBERID " +
+            "NOT IN (SELECT MEMBERID_B " +
+            "FROM CONTACTS " +
+            "WHERE MEMBERID_A = $1) " +
+            "AND MEMBERID != $1) as FRIEND " +
+            "WHERE " +
+            "(FRIEND.MEMBERID NOT IN (SELECT MEMBERID_A " +
+            "FROM CONTACTS " +
+            "WHERE MEMBERID_B = $1 " +
+            "AND VERIFIED = 0) " +
+            "AND MEMBERID != $1) " +
+            "ORDER BY FRIEND.USERNAME ASC";
+        let values = [request.decoded.memberid];
+        pool.query(query, values)
+            .then((result) => {
+                response.status(200).send(result.rows);
             })
             .catch((err) => {
                 response.status(500).send({
