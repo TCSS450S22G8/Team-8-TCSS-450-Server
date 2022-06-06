@@ -69,7 +69,7 @@ function acceptFriendRequest(token, responder) {
 function deleteFriend(token, deleter, beingDeletedEmail) {
     var data = {
         type: "deleteFriend",
-        message: deleter.username + " deleted you from their contacts.",
+        message: deleter + " deleted you from their contacts.",
         email: beingDeletedEmail,
     };
 
