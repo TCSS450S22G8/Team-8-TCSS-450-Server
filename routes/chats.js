@@ -992,37 +992,13 @@ router.get(
                 });
             });
     },
-    (request, response, next) => {
+    (request, response) => {
         //insert welcome message into private chat
         let query =
             "INSERT INTO MESSAGES (CHATID, MESSAGE, MEMBERID) VALUES ($1,'Welcome to the private chat!',$2) RETURNING *";
         let values = [request.chatId, request.slapchatid];
         pool.query(query, values)
             .then((result) => {
-                next();
-            })
-            .catch((err) => {
-                response.status(400).send({
-                    message: "SQL Error on inserting slapchat message",
-                    error: err,
-                });
-            });
-    },
-    (request, response) => {
-        //send push notification to friend that new private chat was created
-        let query = "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
-        let values = [request.friendMemberid];
-        pool.query(query, values)
-            .then((results) => {
-                request.chatname = "a private chat!";
-                results.rows.forEach((entry) => {
-                    console.log(entry.token);
-                    chat_funtions.addUserToChat(
-                        entry.token,
-                        request.params.email,
-                        request
-                    );
-                });
                 response.status(200).send({
                     message:
                         "Private chat did not exist, a new one was created",
@@ -1030,12 +1006,39 @@ router.get(
                 });
             })
             .catch((err) => {
-                response.status(500).send({
-                    message: "SQL Error getting friend push token",
+                response.status(400).send({
+                    message: "SQL Error on inserting slapchat message",
                     error: err,
                 });
             });
     }
+    // (request, response) => {
+    //     //send push notification to friend that new private chat was created
+    //     let query = "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
+    //     let values = [request.friendMemberid];
+    //     pool.query(query, values)
+    //         .then((results) => {
+    //             request.chatname = "a private chat!";
+    //             results.rows.forEach((entry) => {
+    //                 chat_funtions.addUserToChat(
+    //                     entry.token,
+    //                     request.params.email,
+    //                     request
+    //                 );
+    //             });
+    //             response.status(200).send({
+    //                 message:
+    //                     "Private chat did not exist, a new one was created",
+    //                 chatID: request.chatId,
+    //             });
+    //         })
+    //         .catch((err) => {
+    //             response.status(500).send({
+    //                 message: "SQL Error getting friend push token",
+    //                 error: err,
+    //             });
+    //         });
+    // }
 );
 
 /**
