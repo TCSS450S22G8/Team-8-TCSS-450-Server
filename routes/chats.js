@@ -1015,13 +1015,13 @@ router.get(
         pool.query(query, values)
             .then((results) => {
                 request.chatname = "a private chat!";
-                results.rows.forEach((entry) => {
-                    chat_funtions.addUserToChat(entry.token, request);
-                });
                 response.status(200).send({
                     message:
                         "Private chat did not exist, a new one was created",
                     chatID: request.chatId,
+                });
+                results.rows.forEach((entry) => {
+                    chat_funtions.addUserToChat(entry.token, request);
                 });
             })
             .catch((err) => {
