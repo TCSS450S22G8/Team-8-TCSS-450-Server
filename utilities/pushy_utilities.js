@@ -30,10 +30,11 @@ function sendMessageToIndividual(token, email, message) {
 
 //CONTACTS
 //use to send friend request notification
-function sendFriendRequest(token, requestee) {
+function sendFriendRequest(token, requestee, receiverEmail) {
     var data = {
         type: "friendRequest",
         message: requestee + " sent you a friend request.",
+        email: receiverEmail,
     };
 
     pushyAPI.sendPushNotification(data, token, {}, function (err, id) {

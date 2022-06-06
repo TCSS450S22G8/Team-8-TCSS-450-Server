@@ -82,7 +82,7 @@ router.post(
     (request, response, next) => {
         //confirm user we are adding exists
         let query =
-            "SELECT MEMBERS.MEMBERID FROM MEMBERS WHERE UPPER(MEMBERS.EMAIL) = UPPER($1)";
+            "SELECT MEMBERS.MEMBERID, MEMBERS.EMAIL FROM MEMBERS WHERE UPPER(MEMBERS.EMAIL) = UPPER($1)";
         let values = [request.body.email];
         pool.query(query, values)
             .then((result) => {
@@ -92,6 +92,7 @@ router.post(
                     });
                 } else {
                     request.receiverMemberid = result.rows[0].memberid;
+                    request.receiverEmail = result.rows[0].email;
                     next();
                 }
             })
@@ -154,7 +155,8 @@ router.post(
                 result.rows.forEach((entry) =>
                     contact_functions.sendFriendRequest(
                         entry.token,
-                        request.username
+                        request.username,
+                        request.receiverEmail
                     )
                 );
                 response.status(200).send({
