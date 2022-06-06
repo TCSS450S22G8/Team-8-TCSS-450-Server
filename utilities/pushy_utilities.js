@@ -86,11 +86,12 @@ function deleteFriend(token, deleter, beingDeletedEmail) {
 
 //CHATROOMS
 //added to a chat
-function addUserToChat(token, adder) {
+function addUserToChat(token, email, adder) {
     var data = {
         type: "addedUserToChat",
         message: adder.username + " added you to " + adder.chatname,
         chatid: adder.params.chatId,
+        email: email,
     };
 
     pushyAPI.sendPushNotification(data, token, {}, function (err, id) {

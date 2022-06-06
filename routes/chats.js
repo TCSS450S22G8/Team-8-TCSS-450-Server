@@ -96,16 +96,12 @@ router.post(
             })
             .catch((err) => {
                 response.status(400).send({
-                    message: "SQL Error 22",
+                    message: "SQL Error",
                     error: err,
                 });
             });
     },
     (request, response) => {
-        console.log(request.slapchatid);
-        console.log(request.chatID);
-        console.log(request.chatId);
-        console.log(request.chatid);
         let query =
             "INSERT INTO MESSAGES (CHATID, MESSAGE, MEMBERID) VALUES ($1,'Welcome to the chat!',$2) RETURNING *";
         let values = [request.chatid, request.slapchatid];
@@ -118,7 +114,7 @@ router.post(
             })
             .catch((err) => {
                 response.status(400).send({
-                    message: "SQL Error 11",
+                    message: "SQL Error",
                     error: err,
                 });
             });
@@ -443,7 +439,11 @@ router.put(
         pool.query(query, values)
             .then((results) => {
                 results.rows.forEach((entry) => {
-                    chat_funtions.addUserToChat(entry.token, request);
+                    chat_funtions.addUserToChat(
+                        entry.token,
+                        request.body.email,
+                        request
+                    );
                 });
                 response.status(200).send({
                     message: "Successfully added your friend to the chat!",
