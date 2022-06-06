@@ -5,12 +5,13 @@ const pushyAPI = new Pushy(process.env.PUSHY_API_KEY);
 
 //MESSAGING
 //use to send message to a specific client by the token
-function sendMessageToIndividual(token, message) {
+function sendMessageToIndividual(token, email, message) {
     //build the message for Pushy to send
     var data = {
         type: "msg",
         message: message,
         chatid: message.chatid,
+        email: email,
     };
     console.log(data.chatid);
 
@@ -65,10 +66,11 @@ function acceptFriendRequest(token, responder) {
 }
 
 //use to delete friend
-function deleteFriend(token, deleter) {
+function deleteFriend(token, deleter, beingDeletedEmail) {
     var data = {
         type: "deleteFriend",
-        message: deleter + " deleted you from their contacts.",
+        message: deleter.username + " deleted you from their contacts.",
+        email: beingDeletedEmail,
     };
 
     pushyAPI.sendPushNotification(data, token, {}, function (err, id) {

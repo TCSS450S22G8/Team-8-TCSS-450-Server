@@ -405,6 +405,7 @@ router.post("/delete", middleware.checkToken, (request, response) => {
                     pool.query(query, values)
                         .then((result) => {
                             username = result.rows[0].username;
+
                             let query =
                                 "SELECT TOKEN FROM PUSH_TOKEN WHERE MEMBERID = $1";
                             let values = [personDeleted];
@@ -413,7 +414,8 @@ router.post("/delete", middleware.checkToken, (request, response) => {
                                     result.rows.forEach((entry) => {
                                         contact_functions.deleteFriend(
                                             entry.token,
-                                            username
+                                            username,
+                                            beingDeletedEmail
                                         );
                                     });
                                     response.status(200).send({

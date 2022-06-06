@@ -96,10 +96,8 @@ router.post(
     },
     (request, response, next) => {
         //validate memberid exists in the chat
-        console.log("before query");
         let query =
             "SELECT * FROM CHATMEMBERS JOIN MEMBERS ON CHATMEMBERS.MEMBERID = MEMBERS.MEMBERID WHERE CHATID = $1 AND CHATMEMBERS.MEMBERID = $2";
-        console.log(request.body.chatId, request.decoded.memberid);
         let values = [request.body.chatId, request.decoded.memberid];
 
         pool.query(query, values)
@@ -154,16 +152,15 @@ router.post(
     },
     (request, response) => {
         // send a notification of this message to ALL members with registered tokens
-        let query = `SELECT token FROM Push_Token
-                        INNER JOIN ChatMembers ON
-                        Push_Token.memberid=ChatMembers.memberid
-                        WHERE ChatMembers.chatId=$1`;
+        let query =
+            "SELECT TOKEN, EMAIL FROM MEMBERS JOIN CHATMEMBERS ON CHATMEMBERS.MEMBERID = MEMBERS.MEMBERID JOIN PUSH_TOKEN ON CHATMEMBERS.MEMBERID = PUSH_TOKEN.MEMBERID WHERE CHATMEMBERS.CHATID = $1";
         let values = [request.body.chatId];
         pool.query(query, values)
             .then((result) => {
                 result.rows.forEach((entry) =>
                     msg_functions.sendMessageToIndividual(
                         entry.token,
+                        entry.email,
                         response.message
                     )
                 );
