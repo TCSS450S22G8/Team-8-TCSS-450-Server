@@ -1016,7 +1016,12 @@ router.get(
             .then((results) => {
                 request.chatname = "a private chat!";
                 results.rows.forEach((entry) => {
-                    chat_funtions.addUserToChat(entry.token, request);
+                    console.log(entry.token);
+                    chat_funtions.addUserToChat(
+                        entry.token,
+                        request.params.email,
+                        request
+                    );
                 });
                 response.status(200).send({
                     message:

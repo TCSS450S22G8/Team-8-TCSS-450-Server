@@ -98,4 +98,4 @@ WHERE Members.Email = 'sean@test.com'
 --ADD INITIAL MESSAGE TO EACH CHAT
 INSERT INTO 
     MESSAGES (CHATID, MESSAGE, MEMBERID) 
-VALUES (1000,'Welcome to the chat!',1) RETURNING *;
+VALUES (1000,'Welcome to the chat!',6) RETURNING *;
